@@ -1,0 +1,16 @@
+<!-- NumberInput 数字输入组件（纯输入框版） -->
+<view class="number-input-wrap {{focused ? 'focused' : ''}}">
+  <input
+    class="num-input"
+    type="{{decimal > 0 ? 'digit' : 'number'}}"
+    confirm-type="done"
+    maxlength="{{decimal > 0 ? 10 : 5}}"
+    placeholder="{{placeholder}}"
+    value="{{displayValue}}"
+    bindinput="onInput"
+    bindblur="onBlur"
+    bindfocus="onFocus"
+    focus="{{focused}}"
+    adjust-position="{{true}}"
+  />
+</view>

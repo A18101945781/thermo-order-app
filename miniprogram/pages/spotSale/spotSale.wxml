@@ -1,0 +1,81 @@
+<!-- 散点销量录入：单品 / 单人套餐 每日实际售出份数 -->
+<view class="page">
+
+  <!-- 日期选择 -->
+  <view class="date-bar">
+    <picker mode="date" value="{{date}}" bindchange="onDateChange">
+      <view class="date-pick">
+        <text class="date-text">{{date}}</text>
+        <text class="date-week">{{dateWeek}}</text>
+        <text class="date-arrow">▼</text>
+      </view>
+    </picker>
+    <view class="date-today" bindtap="goToday">回到今天</view>
+  </view>
+
+  <view class="tip">填当天实际卖出的<text class="tip-em">份数</text>，保存后订货计算器会自动给出「近7天日均 / 上周同期」参考值。</view>
+
+  <!-- 单品 -->
+  <view class="sec-title">🍽️ 单品（散点）</view>
+  <view class="list">
+    <view class="row" wx:for="{{dishes}}" wx:key="_id">
+      <view class="row-info">
+        <text class="row-name">{{item.dishName}}</text>
+        <text class="row-price">¥{{item.sellPrice}}</text>
+      </view>
+      <NumberInput
+        value="{{items[item._id] || 0}}"
+        min="{{0}}"
+        max="{{9999}}"
+        placeholder="份数"
+        bind:change="onQtyChange"
+        data-id="{{item._id}}"
+      />
+    </view>
+    <view class="empty" wx:if="{{dishes.length === 0}}">暂无单品</view>
+  </view>
+
+  <!-- 单人套餐 -->
+  <view class="sec-title">🧍 单人套餐（散点）</view>
+  <view class="list">
+    <view class="row" wx:for="{{singleMeals}}" wx:key="_id">
+      <view class="row-info">
+        <text class="row-name">{{item.name}}</text>
+        <text class="row-desc">{{item.desc}}</text>
+        <text class="row-price">¥{{item.price}}</text>
+      </view>
+      <NumberInput
+        value="{{items[item._id] || 0}}"
+        min="{{0}}"
+        max="{{9999}}"
+        placeholder="份数"
+        bind:change="onQtyChange"
+        data-id="{{item._id}}"
+      />
+    </view>
+    <view class="empty" wx:if="{{singleMeals.length === 0}}">暂无单人套餐</view>
+  </view>
+
+  <!-- 操作 -->
+  <view class="actions">
+    <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onSave">{{saving ? '保存中…' : '保存 ' + date + ' 销量'}}</view>
+    <view class="act-row">
+      <view class="nb nb-sm nb-default" hover-class="nb-hover" hover-stay-time="80" bindtap="onClear">清空份数</view>
+      <view class="nb nb-sm nb-danger" hover-class="nb-hover" hover-stay-time="80" bindtap="onDelete">删除当天记录</view>
+    </view>
+  </view>
+
+  <!-- 历史 -->
+  <view class="sec-title hist-title" bindtap="onToggleHistory">
+    <text>📅 最近记录</text>
+    <text class="toggle">{{historyCollapsed ? '展开' : '收起'}}</text>
+  </view>
+  <view class="hist" wx:if="{{!historyCollapsed}}">
+    <view class="hist-row" wx:for="{{history}}" wx:key="date">
+      <text class="hist-date">{{item.date}} {{item.week}}</text>
+      <text class="hist-num">{{item.kinds}} 项 / 共 {{item.total}} 份</text>
+    </view>
+    <view class="empty" wx:if="{{history.length === 0}}">暂无历史记录</view>
+  </view>
+
+</view>

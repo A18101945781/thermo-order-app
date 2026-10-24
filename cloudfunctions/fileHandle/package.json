@@ -1,0 +1,10 @@
+{
+  "name": "fileHandle",
+  "version": "1.0.0",
+  "description": "文件处理云函数 - 解析上传的Excel文件，提取5个工作表数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "xlsx": "^0.18.5"
+  }
+}

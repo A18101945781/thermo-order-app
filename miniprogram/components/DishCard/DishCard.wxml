@@ -1,0 +1,22 @@
+<!-- DishCard 菜品卡片组件 -->
+<view class="dish-card" bindtap="onTap">
+  <!-- 菜品名称（直接显示菜名，如「鱼香肉丝」） -->
+  <view class="dish-name">{{dish.dishName}}</view>
+
+  <!-- 价格与成本信息行 -->
+  <view class="price-row">
+    <view class="price-item">
+      <text class="label">售价</text>
+      <text class="value sell-price">{{sellPriceText}}</text>
+    </view>
+    <view class="price-item">
+      <text class="label">总成本</text>
+      <text class="value cost-price">{{totalCostText}}</text>
+    </view>
+  </view>
+
+  <!-- 毛利率标签 -->
+  <view class="gross-tag {{grossRateClass}}">
+    <text>毛利率 {{grossRateText}}</text>
+  </view>
+</view>

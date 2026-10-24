@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "SearchBar": "/components/SearchBar/SearchBar",
+    "DishCard": "/components/DishCard/DishCard"
+  },
+  "navigationBarTitleText": "菜品菜单",
+  "enablePullDownRefresh": true
+}

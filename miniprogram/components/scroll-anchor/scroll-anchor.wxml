@@ -1,0 +1,15 @@
+<!-- 科奇头像滚动定位锚点（老花友好：右侧竖向轨道 + 可拖动圆形头像滑块） -->
+<view wx:if="{{show}}" class="sa-track">
+  <view
+    class="sa-thumb {{dragging ? 'sa-thumb-drag' : ''}}"
+    style="top:{{dragging ? dragTop : progress}}%"
+    bindtouchstart="onTs"
+    bindtouchmove="onTm"
+    bindtouchend="onTe"
+    hover-class="sa-thumb-hover"
+    hover-stay-time="60"
+  >
+    <image class="sa-img" src="/images/keqi.jpg" mode="aspectFill" />
+    <text class="sa-pct">{{dragging ? dragPct : progress}}%</text>
+  </view>
+</view>

@@ -1,0 +1,258 @@
+/* 原料管理页样式 */
+.page {
+  min-height: 100vh;
+  background: var(--bg-color, #F5F5F5);
+  padding-bottom: 120rpx;
+}
+
+/* 筛选区域 */
+.filter-section {
+  margin-bottom: 12rpx;
+}
+
+/* 搜索栏 */
+.search-wrapper {
+  padding: 0 24rpx 12rpx;
+}
+
+/* Excel 导入栏 */
+.excel-bar {
+  padding: 0 24rpx 12rpx;
+}
+
+/* 库存快调工具条 */
+.quick-edit-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 24rpx 16rpx;
+  padding: 16rpx 20rpx;
+  background: linear-gradient(135deg, #FFF8F8 0%, #FFEDFB 100%);
+  border: 2rpx solid #FA5151;
+  border-radius: 12rpx;
+}
+.quick-edit-info { flex: 1; }
+.quick-edit-tip {
+  font-size: 24rpx;
+  color: #C03442;
+  font-weight: 600;
+}
+.quick-edit-actions {
+  display: flex;
+  gap: 12rpx;
+}
+.quick-edit-actions .sup-btn {
+  margin: 0;
+  font-size: 26rpx;
+  padding: 8rpx 20rpx;
+}
+
+/* 表格容器 */
+.table-wrapper {
+  padding: 0 24rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx 0;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: var(--font-base, 28rpx);
+  color: var(--text-secondary, #999999);
+}
+
+.empty-desc {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  margin-top: 8rpx;
+}
+
+/* 加载中 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx 0;
+}
+
+.loading-text {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  margin-top: 16rpx;
+}
+
+/* CSS 转圈（原来是 t-icon name="loading"，字体加载失败 → 一片空白） */
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #FFE0E0;
+  border-top-color: var(--primary-color, #FA5151);
+  border-radius: 50%;
+  animation: lspin .8s linear infinite;
+}
+@keyframes lspin { to { transform: rotate(360deg); } }
+
+/* 浮动操作按钮 */
+.fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 120rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: var(--primary-color, #FA5151);
+  box-shadow: 0 8rpx 24rpx rgba(250, 81, 81, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* FAB 内的「＋」（原来是 t-icon name="add"，看不见 → 空白红圆） */
+.fab-plus { color: #FFFFFF; font-size: 64rpx; line-height: 1; margin-top: -6rpx; }
+.fab-hover { opacity: .82; transform: scale(.94); }
+
+/* 编辑弹窗：面板高度由全局 .dlg-panel(88vh) 控制，此处只负责「撑满 + 内部滚动」。
+   2026-10-01：原来只有 max-height、没有确定高度 → scroll-view 不滚动、
+   内容顶破面板、底部「取消/保存」被推出屏幕外。 */
+.popup-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 28rpx 24rpx 0;
+}
+
+.popup-title {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+/* 滚动区必须「flex:1 + min-height:0」：微信 scroll-view 需要确定的父级高度才会滚，
+   min-height:0 防止内容把 flex 子项撑高（否则滚不动）。 */
+.popup-form {
+  flex: 1;
+  min-height: 0;
+}
+
+.form-item {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+/* 按钮区：flex-shrink:0 保证被内容挤压时也不缩没，始终钉在面板底部 */
+.popup-actions {
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 20rpx 0 calc(20rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #F5F5F5;
+  background: #fff;
+}
+
+/* 批量设置供应商按钮组 */
+.sup-bar {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.sup-btn {
+  flex: 1;
+  font-size: var(--font-sm, 24rpx);
+  line-height: 64rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  background: #FFFFFF;
+  color: var(--primary-color, #FA5151);
+  border: 1rpx solid var(--primary-color, #FA5151);
+  padding: 0;
+}
+
+.sup-btn::after {
+  border: none;
+}
+
+.sup-btn.primary {
+  background: var(--primary-color, #FA5151);
+  color: #FFFFFF;
+}
+
+/* 批量预览统计 */
+.import-stat {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  text-align: center;
+  margin-bottom: 16rpx;
+}
+
+/* 批量预览空态（此前 wxml 引用但样式未定义） */
+.empty-row {
+  padding: 40rpx 0;
+  text-align: center;
+  color: var(--text-secondary, #999999);
+  font-size: var(--font-sm, 24rpx);
+}
+
+/* 批量预览行 */
+.sup-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 8rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+  font-size: var(--font-base, 28rpx);
+}
+
+.sup-row.sup-missing {
+  opacity: 0.5;
+  background: #FFF5F5;
+}
+
+.sup-name {
+  flex: 1;
+  color: var(--text-primary, #333333);
+  font-weight: 500;
+}
+
+.sup-old {
+  flex: 1;
+  color: var(--text-secondary, #999999);
+  text-align: center;
+  font-size: var(--font-sm, 24rpx);
+}
+
+.sup-arrow {
+  width: 48rpx;
+  text-align: center;
+  color: var(--primary-color, #FA5151);
+}
+
+.sup-new {
+  flex: 1;
+  color: var(--primary-color, #FA5151);
+  text-align: center;
+  font-weight: 500;
+  font-size: var(--font-sm, 24rpx);
+}

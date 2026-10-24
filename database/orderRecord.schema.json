@@ -1,0 +1,35 @@
+{
+  "collection": "orderRecord",
+  "description": "订货订单表",
+  "fields": {
+    "_id": { "type": "string", "description": "订单ID" },
+    "createTime": { "type": "number", "description": "创建时间戳" },
+    "orderNum": {
+      "type": "array",
+      "description": "各菜品订货份数",
+      "items": {
+        "dishId": { "type": "string", "description": "菜品ID" },
+        "count": { "type": "number", "description": "份数" },
+        "bomList": { "type": "array", "description": "该菜品的BOM快照" }
+      }
+    },
+    "materialTotal": {
+      "type": "array",
+      "description": "原料汇总数据",
+      "items": {
+        "name": { "type": "string", "description": "原料名称" },
+        "unit": { "type": "string", "description": "单位" },
+        "price": { "type": "number", "description": "单价" },
+        "supplier": { "type": "string", "description": "供应商" },
+        "totalUseNum": { "type": "number", "description": "总用量(含损耗)" },
+        "curStock": { "type": "number", "description": "当前库存" },
+        "suggestBuy": { "type": "number", "description": "建议采购量=MAX(0,总用量-库存)" },
+        "suggestCost": { "type": "number", "description": "建议采购金额" },
+        "totalCost": { "type": "number", "description": "总成本" }
+      }
+    },
+    "totalMoney": { "type": "number", "description": "采购总金额(元)" },
+    "lossRate": { "type": "number", "description": "损耗系数(1.0~2.0)" },
+    "operator": { "type": "string", "description": "操作人昵称" }
+  }
+}

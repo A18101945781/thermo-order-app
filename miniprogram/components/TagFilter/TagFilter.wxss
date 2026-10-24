@@ -1,0 +1,44 @@
+/* TagFilter 标签筛选组件样式 */
+.tag-filter {
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  padding: 8rpx 0;
+}
+.tag-title {
+  font-size: 24rpx;
+  color: #999;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  padding-left: 24rpx;
+}
+.tag-scroll {
+  flex: 1;
+  white-space: nowrap;
+}
+.tag-list {
+  display: inline-flex;
+  padding: 8rpx 24rpx;
+  gap: 16rpx;
+}
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 28rpx;
+  background-color: #F5F5F5;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #666666;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.tag-item:active {
+  transform: scale(0.95);
+}
+.tag-active {
+  background-color: #FA5151;
+  color: #FFFFFF;
+  font-weight: 500;
+}

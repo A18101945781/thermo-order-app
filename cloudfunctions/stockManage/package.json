@@ -1,0 +1,9 @@
+{
+  "name": "stockManage",
+  "version": "1.0.0",
+  "description": "库存管理云函数 - 每道可订货菜现有库存份数（双端同步）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

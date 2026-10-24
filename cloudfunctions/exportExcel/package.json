@@ -1,0 +1,10 @@
+{
+  "name": "exportExcel",
+  "version": "1.0.0",
+  "description": "Excel导出云函数 - 生成包含3个工作表的Excel并上传到云存储",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "thermo-order-miniprogram",
+  "version": "1.0.0",
+  "description": "热力学餐厅订货管理小程序前端",
+  "private": true,
+  "dependencies": {
+    "tdesign-miniprogram": "^1.15.2"
+  }
+}

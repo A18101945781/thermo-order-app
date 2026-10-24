@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "SearchBar": "/components/SearchBar/SearchBar",
+    "TagFilter": "/components/TagFilter/TagFilter",
+    "MaterialTable": "/components/MaterialTable/MaterialTable",
+    "ExcelUpload": "/components/ExcelUpload/ExcelUpload"
+  },
+  "navigationBarTitleText": "原料管理"
+}

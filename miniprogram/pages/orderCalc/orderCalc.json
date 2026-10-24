@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "NumberInput": "/components/NumberInput/NumberInput"
+  },
+  "navigationBarTitleText": "订货计算器"
+}

@@ -1,0 +1,65 @@
+<!-- 首页导航 - 四大功能入口 + 存储模式/角色标识 -->
+<view class="page" wx:if="{{pageReady}}">
+  <!-- 顶部状态栏：存储模式 + 角色 -->
+  <view class="header-bar">
+    <view class="mode-badge {{isCloud ? 'cloud' : 'local'}}">
+      <text>{{isCloud ? '☁️ 云端数据库' : '📱 本地缓存'}}</text>
+    </view>
+    <view class="role-badge">
+      <text>{{roleLabel}}</text>
+    </view>
+  </view>
+
+  <!-- 欢迎区域 -->
+  <view class="welcome-section">
+    <text class="welcome-icon">🌡️</text>
+    <text class="welcome-title">热力学餐厅</text>
+    <text class="welcome-subtitle">订货管理系统</text>
+  </view>
+
+  <!-- 功能卡片网格 -->
+  <view class="card-grid">
+    <!-- 菜品菜单 -->
+    <view class="nav-card card-1" bindtap="navigateTo" data-page="/pages/dishList/dishList">
+      <text class="card-icon">🍽️</text>
+      <text class="card-title">菜品菜单</text>
+      <text class="card-desc">管理菜品与BOM</text>
+    </view>
+
+    <!-- 原料管理 -->
+    <view class="nav-card card-2" bindtap="navigateTo" data-page="/pages/material/material">
+      <text class="card-icon">📦</text>
+      <text class="card-title">原料管理</text>
+      <text class="card-desc">供应商与库存</text>
+    </view>
+
+    <!-- 订货计算器 -->
+    <view class="nav-card card-3" bindtap="navigateTo" data-page="/pages/orderCalc/orderCalc">
+      <text class="card-icon">🧮</text>
+      <text class="card-title">订货计算器</text>
+      <text class="card-desc">智能采购汇总</text>
+    </view>
+
+    <!-- 历史报表 -->
+    <view class="nav-card card-4" bindtap="navigateTo" data-page="/pages/record/record">
+      <text class="card-icon">📊</text>
+      <text class="card-title">历史报表</text>
+      <text class="card-desc">订货记录查询</text>
+    </view>
+  </view>
+
+  <!-- 底部菜单入口 -->
+  <view class="bottom-nav">
+    <view class="bottom-nav-item" bindtap="navigateTo" data-page="/pages/mine/mine">
+      <image class="bottom-nav-icon-img" src="/images/keqi.jpg" mode="aspectFill" />
+      <text class="bottom-nav-text">个人中心</text>
+    </view>
+  </view>
+</view>
+
+<!-- 加载占位 -->
+<view class="boot-placeholder" wx:else>
+  <text class="boot-icon">🌡️</text>
+  <text class="boot-text">正在加载…</text>
+<scroll-anchor show="{{showScrollAnchor}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

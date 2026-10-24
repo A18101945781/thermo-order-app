@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "NumberInput": "/components/NumberInput/NumberInput"
+  },
+  "navigationBarTitleText": "散点销量录入"
+}

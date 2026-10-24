@@ -1,0 +1,74 @@
+<!-- ExcelUpload Excel文件上传组件 -->
+<view wx:if="{{visible}}" class="upload-overlay" bindtap="onClose">
+  <!-- 弹窗主体 -->
+  <view class="upload-popup" catchtap="">
+
+    <!-- 标题栏 -->
+    <view class="popup-header">
+      <text class="popup-title">导入Excel数据</text>
+      <text class="popup-close" bindtap="onClose">✕</text>
+    </view>
+
+    <!-- 内容区 -->
+    <view class="popup-body">
+      <!-- 文件选择按钮 -->
+      <view class="upload-area" bindtap="onChooseFile">
+        <view wx:if="{{!fileName}}" class="upload-placeholder">
+          <text class="upload-icon">📁</text>
+          <text class="upload-hint">点击选择 .xlsx 文件</text>
+          <text class="upload-type">支持 .xlsx / .xls 格式</text>
+        </view>
+        <view wx:else class="upload-file-info">
+          <text class="file-icon">📄</text>
+          <view class="file-detail">
+            <text class="file-name">{{fileName}}</text>
+            <text class="file-size">{{fileSize}}</text>
+          </view>
+          <text class="file-remove" catchtap="onRemoveFile">✕</text>
+        </view>
+      </view>
+
+      <!-- 数据预览 -->
+      <view wx:if="{{previewText}}" class="preview-section">
+        <text class="preview-title">数据预览（前5行）</text>
+        <scroll-view class="preview-scroll" scroll-y>
+          <text class="preview-content">{{previewText}}</text>
+        </scroll-view>
+      </view>
+
+      <!-- 导入模式选择 -->
+      <view wx:if="{{fileName}}" class="mode-section">
+        <text class="mode-title">导入模式</text>
+        <view class="mode-options">
+          <!-- 覆盖模式 -->
+          <view class="mode-item {{importMode === 'overwrite' ? 'mode-active' : ''}}" bindtap="onSelectMode" data-mode="overwrite">
+            <view class="mode-radio">
+              <view wx:if="{{importMode === 'overwrite'}}" class="radio-dot"></view>
+            </view>
+            <view class="mode-info">
+              <text class="mode-name">覆盖导入</text>
+              <text class="mode-desc">清空现有数据后导入</text>
+            </view>
+          </view>
+          <!-- 追加模式 -->
+          <view class="mode-item {{importMode === 'append' ? 'mode-active' : ''}}" bindtap="onSelectMode" data-mode="append">
+            <view class="mode-radio">
+              <view wx:if="{{importMode === 'append'}}" class="radio-dot"></view>
+            </view>
+            <view class="mode-info">
+              <text class="mode-name">追加导入</text>
+              <text class="mode-desc">保留现有数据并追加</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作按钮 -->
+    <view class="popup-footer">
+      <view class="btn btn-cancel" bindtap="onClose">取消</view>
+      <view class="btn btn-confirm {{!canImport ? 'btn-disabled' : ''}}" bindtap="onImport">开始导入</view>
+    </view>
+
+  </view>
+</view>

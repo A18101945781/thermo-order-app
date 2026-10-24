@@ -1,0 +1,86 @@
+/* DishCard 菜品卡片组件样式 */
+
+.dish-card {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  padding: 24rpx;
+  margin: 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.dish-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
+}
+
+/* 套餐类型标签 */
+.package-tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: #FFFFFF;
+  margin-bottom: 16rpx;
+}
+
+/* 价格信息行 */
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-item .label {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 4rpx;
+}
+
+.price-item .value {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.sell-price {
+  color: #FA5151;
+}
+
+.cost-price {
+  color: #333333;
+}
+
+/* 毛利率标签 */
+.gross-tag {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+/* 高毛利率 >=80% 绿色 */
+.gross-tag.rate-high {
+  background-color: rgba(7, 193, 96, 0.1);
+  color: #07C160;
+}
+
+/* 中等毛利率 60%-80% 橙色 */
+.gross-tag.rate-mid {
+  background-color: rgba(255, 153, 0, 0.1);
+  color: #FF9900;
+}
+
+/* 低毛利率 <60% 红色 */
+.gross-tag.rate-low {
+  background-color: rgba(250, 81, 81, 0.1);
+  color: #FA5151;
+}

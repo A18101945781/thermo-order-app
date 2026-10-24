@@ -1,0 +1,197 @@
+<!-- 个人中心页 - 用户信息 + 功能菜单 + 退出登录 -->
+<!-- 2026-10-01：整页去掉 tdesign 依赖（t-cell 的图标、t-tag、t-dialog 在本工程均不渲染），全部改原生 -->
+<view class="page">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <image class="avatar" src="/images/keqi.jpg" mode="aspectFill" />
+    <view class="user-info">
+      <view class="user-name-row">
+        <text class="nickname">{{nickname}}</text>
+        <text class="role-tag">{{roleLabel}}</text>
+      </view>
+      <text class="openid-text">ID: {{openid}}</text>
+    </view>
+  </view>
+
+  <!-- 存储模式指示器 -->
+  <view class="storage-card">
+    <text class="storage-icon">{{isCloud ? '☁️' : '📱'}}</text>
+    <view class="storage-info">
+      <text class="storage-title">{{isCloud ? '云端数据库' : '本地缓存'}}</text>
+      <text class="storage-desc">{{isCloud ? '数据存储在云端，多端同步' : '数据保存在本地，卸载即丢失'}}</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-list">
+      <!-- 套餐组成设置（成人套餐换菜） -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onSetMealEdit">
+        <view class="menu-row-main">
+          <text class="menu-row-title">套餐组成设置</text>
+          <text class="menu-row-note">成人套餐换菜，改完全局生效</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 散点销量录入（单品 / 单人套餐） -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onSpotSale">
+        <view class="menu-row-main">
+          <text class="menu-row-title">散点销量录入</text>
+          <text class="menu-row-note">记录每日实际售出份数</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 成本看板（2026-10-13 新增）：成本核算方案 M7 报表与看板 -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onCostBoard">
+        <view class="menu-row-main">
+          <text class="menu-row-title">成本看板</text>
+          <text class="menu-row-note">毛利率分布 · 建议调价 · 配方异常</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 导出Excel -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onExportExcel">
+        <view class="menu-row-main">
+          <text class="menu-row-title">导出Excel</text>
+          <text class="menu-row-note">将数据导出为CSV文件</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 数据备份（导出全部业务数据 JSON，2026-10-03 补全库存/套餐/预定/销量） -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onBackupData">
+        <view class="menu-row-main">
+          <text class="menu-row-title">备份数据</text>
+          <text class="menu-row-note">导出全部数据 JSON，可转发到聊天</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 导入数据（从聊天记录选备份 JSON 还原，2026-10-03） -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onImportData">
+        <view class="menu-row-main">
+          <text class="menu-row-title">导入数据</text>
+          <text class="menu-row-note">选聊天里的备份文件，还原到本机</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 数据上云（仅云模式显示）：新开云环境后，把本机数据推到云端做首次同步 2026-10-03 -->
+      <view wx:if="{{isCloud}}" class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onMigrateToCloud">
+        <view class="menu-row-main">
+          <text class="menu-row-title">数据上云</text>
+          <text class="menu-row-note">把本机原料/菜品/预定同步到云端（首次同步用）</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 清空本地缓存 -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onClearCache">
+        <view class="menu-row-main">
+          <text class="menu-row-title">清空本地缓存</text>
+          <text class="menu-row-note danger">危险操作，不可恢复</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 权限说明 -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onShowPermissions">
+        <view class="menu-row-main">
+          <text class="menu-row-title">权限说明</text>
+          <text class="menu-row-note">查看当前角色权限</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <!-- 关于系统 -->
+      <view class="menu-row" hover-class="menu-row-hover" hover-stay-time="80" bindtap="onAbout">
+        <view class="menu-row-main">
+          <text class="menu-row-title">关于系统</text>
+          <text class="menu-row-note">v1.0.0</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录按钮 -->
+  <view class="logout-section">
+    <view class="logout-btn" bindtap="onLogout">
+      <text class="logout-text">退出登录</text>
+    </view>
+  </view>
+
+  <!-- 底部安全区 -->
+  <view class="safe-bottom" />
+
+  <!-- 权限说明弹窗（原生弹层：tdesign t-dialog 在本工程不渲染）2026-10-01 -->
+  <view wx:if="{{showPermDialog}}" class="dlg-mask dlg-center" bindtap="onClosePermDialog">
+    <view class="perm-panel" catchtap="onNoop">
+      <text class="perm-title">权限说明</text>
+      <scroll-view class="perm-body" scroll-y>
+        <text class="perm-text">{{permissionContent}}</text>
+      </scroll-view>
+      <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onClosePermDialog">知道了</view>
+    </view>
+  </view>
+
+  <!-- 导入预览弹窗（原生弹层；面板用确定高度 height:82vh，否则 scroll-view 不滚会把按钮顶出屏幕）2026-10-03 -->
+  <view wx:if="{{showImportDialog}}" class="dlg-mask dlg-center" bindtap="onCloseImport">
+    <view class="imp-panel" catchtap="onNoop">
+      <text class="imp-title">导入预览</text>
+      <text class="imp-file">{{importFileName}}</text>
+      <text class="imp-meta">{{importMetaText}}</text>
+
+      <scroll-view class="imp-body" scroll-y>
+        <!-- 模式切换 -->
+        <view class="imp-modes">
+          <view class="imp-mode {{importMode === 'merge' ? 'on' : ''}}" data-mode="merge" bindtap="onImportModeChange">
+            <text class="imp-mode-t">合并（推荐）</text>
+            <text class="imp-mode-d">同一条用备份覆盖，本机多出来的保留</text>
+          </view>
+          <view class="imp-mode {{importMode === 'replace' ? 'on' : ''}}" data-mode="replace" bindtap="onImportModeChange">
+            <text class="imp-mode-t">整份覆盖</text>
+            <text class="imp-mode-d">完全按备份来，本机多出来的删除</text>
+          </view>
+        </view>
+
+        <!-- 逐类明细 -->
+        <view class="imp-table">
+          <view class="imp-tr imp-th">
+            <text class="imp-td c1">数据</text>
+            <text class="imp-td c2">备份</text>
+            <text class="imp-td c3">本机</text>
+            <text class="imp-td c4">结果</text>
+          </view>
+          <view class="imp-tr" wx:for="{{importRows}}" wx:key="key">
+            <text class="imp-td c1">{{item.label}}</text>
+            <text class="imp-td c2">{{item.backupCount}}</text>
+            <text class="imp-td c3">{{item.localCount}}</text>
+            <view class="imp-td c4">
+              <text class="imp-badge add" wx:if="{{item.add > 0}}">+{{item.add}}</text>
+              <text class="imp-badge upd" wx:if="{{item.update > 0}}">改{{item.update}}</text>
+              <text class="imp-badge same" wx:if="{{item.add === 0 && item.update === 0}}">不变</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="imp-sum">
+          <text class="imp-sum-line">新增 {{importSummary.add}} 条 · 覆盖 {{importSummary.update}} 条</text>
+          <text class="imp-sum-line warn" wx:if="{{importSummary.keep > 0}}">{{importMode === 'replace' ? '将删除本机独有 ' + importSummary.keep + ' 条' : '保留本机独有 ' + importSummary.keep + ' 条'}}</text>
+        </view>
+      </scroll-view>
+
+      <view class="imp-actions">
+        <view class="nb nb-default imp-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseImport">取消</view>
+        <view class="nb imp-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="onConfirmImport">确认导入</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Toast：全项目统一用原生 wx.showToast，tdesign t-toast 从未被调用，标记已移除 -->
+<!-- 弹窗打开时必须隐藏锚点：锚点 z-index 高于弹层，会压住弹窗按钮 -->
+<scroll-anchor show="{{showScrollAnchor && !showPermDialog && !showImportDialog}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

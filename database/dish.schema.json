@@ -1,0 +1,25 @@
+{
+  "collection": "dish",
+  "description": "菜品BOM明细表",
+  "fields": {
+    "_id": { "type": "string", "description": "记录ID" },
+    "dishName": { "type": "string", "description": "菜品名称", "required": true },
+    "packageType": { "type": "string", "description": "套餐类型(A套餐/B套餐/C套餐/单品)" },
+    "bomList": {
+      "type": "array",
+      "description": "原料配比数组",
+      "items": {
+        "name": { "type": "string", "description": "原料名称" },
+        "useNum": { "type": "number", "description": "每份用量(kg或个)" },
+        "price": { "type": "number", "description": "原料单价" },
+        "unit": { "type": "string", "description": "单位" },
+        "cost": { "type": "number", "description": "该项成本=useNum×price" }
+      }
+    },
+    "totalCost": { "type": "number", "description": "每份总成本(元)" },
+    "sellPrice": { "type": "number", "description": "售价(元)" },
+    "grossRate": { "type": "number", "description": "毛利率(0~1)" },
+    "profit": { "type": "number", "description": "单份利润(元)" },
+    "createTime": { "type": "number", "description": "创建时间戳" }
+  }
+}

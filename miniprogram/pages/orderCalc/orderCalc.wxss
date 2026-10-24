@@ -1,0 +1,765 @@
+/* ============================================================
+   orderCalc 订货计算器 · 样式表（2026-09-22 全量重建）
+   背景：原文件丢失约 107 个类样式 → 页面无布局骨架、整页超长、滚动困难
+   布局策略：
+     1) 页面整体滚动（.page）
+     2) 菜品列表 .dish-scroll 限高 → 内部滚动 + 「下滑加载更多」分页恢复
+     3) 库存明细 .inv-scroll 限高 → 内部滚动，表头常驻
+     4) .bottom-bar 吸底固定
+   ============================================================ */
+
+/* ---------------- 页面骨架 ---------------- */
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--color-bg, #F5F5F5);
+  padding-bottom: 320rpx; /* 给吸底汇总栏留位 */
+}
+
+/* ---------------- 顶部标签切换（原生分段控件，2026-10-01 换掉 tdesign t-tabs）---------------- */
+.seg-bar {
+  display: flex;
+  margin: 16rpx 20rpx 0;
+  background: #EFEFEF;
+  border-radius: 14rpx;
+  padding: 6rpx;
+}
+.seg-item {
+  flex: 1;
+  text-align: center;
+  height: 68rpx;
+  line-height: 68rpx;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 10rpx;
+}
+.seg-item.active {
+  background: #FFFFFF;
+  color: var(--primary-color, #FA5151);
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+/* ---------------- 散点销量入口 ---------------- */
+.spot-entry {
+  margin: 16rpx 20rpx 0;
+  padding: 16rpx 20rpx;
+  background: #FFF7E6;
+  border: 1rpx solid #FFE1A8;
+  border-radius: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.spot-entry-text { font-size: 26rpx; color: #A05A00; font-weight: 600; }
+.spot-entry-note { font-size: 22rpx; color: #B98B4A; }
+
+/* ---------------- 折叠区通用头部 ---------------- */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 20rpx;
+  background: #FAFAFA;
+  border-bottom: 1rpx solid #EFEFEF;
+}
+.section-header .section-title {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+.section-toggle {
+  flex-shrink: 0;
+  margin-left: 12rpx;
+  display: flex;
+  align-items: center;
+}
+.toggle-text { font-size: 24rpx; color: #888; }
+.toggle-arrow { margin-left: 8rpx; font-size: 22rpx; color: #999; }
+
+/* ---------------- 套餐快捷订货 ---------------- */
+.meal-section {
+  margin-top: 16rpx;
+  background: #fff;
+  border-top: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eee;
+}
+.meal-cards { padding: 20rpx; }
+.meal-rows { display: flex; flex-direction: column; }
+.meal-row { display: flex; }
+.meal-cell { flex: 1; min-width: 0; }
+.meal-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 18rpx 16rpx;
+  background: #FFF6F6;
+  border: 1rpx solid #FFD9D9;
+  border-radius: 14rpx;
+}
+.meal-card-single { background: #FFF6F6; }
+.meal-tag {
+  position: absolute;
+  top: -14rpx;
+  left: 16rpx;
+  padding: 2rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  line-height: 1.7;
+  color: #fff;
+}
+.tag-single { background: #FA5151; }
+.meal-info { flex: 1; min-width: 0; }
+.meal-name { display: block; font-size: 28rpx; font-weight: 600; color: #333; }
+.meal-desc { display: block; margin-top: 4rpx; font-size: 22rpx; color: #999; }
+.meal-price { display: block; margin-top: 6rpx; font-size: 24rpx; color: #FA5151; }
+.meal-count {
+  width: 150rpx;
+  flex-shrink: 0;
+  margin-left: 12rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---------------- 销量参考行（套餐 / 菜品共用）---------------- */
+.ref-row { display: flex; flex-wrap: wrap; align-items: center; margin-top: 8rpx; }
+.ref-tag { margin-right: 8rpx; font-size: 20rpx; color: #999; }
+.ref-btn {
+  margin-right: 8rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: #1989FA;
+  background: #EAF4FF;
+}
+.ref-btn:active { opacity: .7; }
+
+/* ---------------- 菜品列表（限高内部滚动）---------------- */
+.dish-section-title {
+  padding: 16rpx 20rpx 8rpx;
+  background: var(--color-bg, #F5F5F5);
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+}
+.dish-scroll {
+  /* 关键：限高 → 内部滚动，分页(bindscrolltolower)生效，整页不再被 60 道菜撑长 */
+  height: 52vh;
+  margin-top: 12rpx;
+  background: var(--color-bg, #F5F5F5);
+  box-sizing: border-box;
+}
+/* 分类标题（采购单品类分隔共用） */
+.cat-head {
+  width: 100%;
+  padding: 12rpx 0 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #888;
+}
+
+/* ---------------- 紧凑订货表（2026-09-22 用户定稿）----------------
+   三列：分类（合并单元格效果）| 品名 | 订货（份）；红字菜整行浅红底 + 红字 */
+.od-table {
+  margin: 0 16rpx;
+  background: #fff;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+.od-head {
+  display: flex;
+  align-items: center;
+  background: #F7F7F7;
+  border-bottom: 1rpx solid #E5E5E5;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #666;
+}
+.od-head-cat {
+  width: 140rpx;
+  flex-shrink: 0;
+  padding: 16rpx 8rpx;
+  text-align: center;
+  border-right: 1rpx solid #E5E5E5;
+}
+.od-head-name { flex: 1; min-width: 0; padding: 16rpx 12rpx; }
+.od-head-qty {
+  width: 180rpx;
+  flex-shrink: 0;
+  padding: 16rpx 8rpx;
+  text-align: center;
+  border-left: 1rpx solid #E5E5E5;
+}
+.od-group {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1rpx solid #E5E5E5;
+}
+.od-group:last-child { border-bottom: none; }
+/* 分类列：整组一行，内容垂直居中 → 视觉上等于合并单元格 */
+.od-cat {
+  width: 140rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 8rpx;
+  background: #FAFAFA;
+  border-right: 1rpx solid #E5E5E5;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+.od-rows { flex: 1; min-width: 0; }
+.od-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #F2F2F2;
+}
+.od-rows .od-row:last-child { border-bottom: none; }
+.od-name-cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 10rpx 12rpx;
+}
+.od-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 26rpx;
+  color: #333;
+}
+.od-ordered { flex-shrink: 0; margin-left: 8rpx; font-size: 20rpx; color: #FA5151; }
+
+/* ── 预估量预警（2026-09-26 A1）── */
+.od-est { flex-shrink: 0; margin-left: 8rpx; font-size: 20rpx; color: #BBBBBB; }
+.od-est.warn { color: #FF9500; font-weight: 600; }
+.od-row.low-est { background: #FFF8E6; }
+.od-row.low-est .od-name { color: #B26A00; }
+.est-warn {
+  margin: 0 0 12rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 10rpx;
+  background: #FFF8E6;
+  border-left: 6rpx solid #FF9500;
+}
+.est-warn-head { display: flex; align-items: center; justify-content: space-between; }
+.est-warn-title { font-size: 24rpx; font-weight: 600; color: #B26A00; }
+.est-warn-more { font-size: 22rpx; color: #C08A2E; }
+.est-warn-list { margin-top: 10rpx; display: flex; flex-direction: column; }
+.est-warn-item { font-size: 22rpx; color: #8A6A2E; line-height: 1.7; }
+.od-qty {
+  width: 180rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rpx 0;
+  border-left: 1rpx solid #F2F2F2;
+}
+.od-row.mark { background: #FFECEC; }
+.od-row.mark .od-name { color: #FA5151; }
+.od-row.ordered { background: #FFF6F6; }
+.od-row.mark.ordered { background: #FFE0E0; }
+
+/* 打印标记红字（2026-09-16） */
+.dish-name.mark-red { color: #FA5151 !important; font-weight: 600; }
+
+/* 加载更多 / 空状态 */
+.dish-more { padding: 20rpx 0 40rpx; text-align: center; }
+.dish-more-text { font-size: 24rpx; color: #999; }
+.empty-state {
+  padding: 80rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty-icon { font-size: 64rpx; }
+.empty-text { margin-top: 12rpx; font-size: 26rpx; color: #999; }
+
+/* ---------------- SOP 标准件快速调用 ---------------- */
+.sop-section {
+  margin-top: 16rpx;
+  background: #fff;
+  border-top: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eee;
+}
+.sop-cards { padding: 8rpx 20rpx 16rpx; }
+.sop-card {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.sop-card:last-child { border-bottom: none; }
+.sop-info { flex: 1; min-width: 0; }
+.sop-name { display: block; font-size: 26rpx; color: #333; }
+.sop-price { display: block; margin-top: 4rpx; font-size: 22rpx; color: #999; }
+.sop-count {
+  width: 150rpx;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---------------- 库存订货区 ---------------- */
+.inventory-section {
+  margin-top: 16rpx;
+  background: #ffffff;
+  border-top: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eee;
+}
+.inventory-table { padding: 0 20rpx 12rpx; }
+/* 库存退回出厂基线时的橙色警示（只在 inventorySource==='seed' 时出现） */
+.inv-warn {
+  margin: 12rpx 0 0;
+  padding: 14rpx 18rpx;
+  font-size: 24rpx;
+  line-height: 1.55;
+  color: #8a4b00;
+  background: #FFF3E0;
+  border: 1rpx solid #FFCC80;
+  border-radius: 10rpx;
+}
+.inv-hint { padding: 12rpx 0 4rpx; font-size: 22rpx; color: #999; }
+.inventory-header,
+.inventory-row {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.inventory-header {
+  font-size: 24rpx;
+  color: #888;
+  font-weight: 600;
+  border-bottom: 1rpx solid #E5E5E5;
+}
+.inventory-row { font-size: 26rpx; color: #333; }
+.inventory-row.need { background: #fff8f8; }
+/* 库存明细限高内部滚动，表头固定在上方 */
+.inv-scroll { height: 56vh; }
+.inv-col-name {
+  flex: 1;
+  padding-right: 12rpx;
+  word-break: break-all;
+}
+.inv-col-stock {
+  width: 124rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #666;
+}
+/* 库存列数字框收窄 + 醒目色（2026-09-20 库存改为可直接编辑） */
+.inv-col-stock .number-input-wrap { width: 116rpx; }
+.inv-col-stock .num-input {
+  height: 56rpx;
+  font-size: 26rpx;
+  color: #FA5151;
+  font-weight: 600;
+}
+.inv-col-order {
+  width: 140rpx;
+  display: flex;
+  justify-content: center;
+}
+.inv-col-need {
+  width: 100rpx;
+  text-align: right;
+  font-weight: 600;
+  color: #666;
+}
+.inv-col-need.highlight { color: #FA5151; }
+
+/* 库存区顶部「提示 + 批量导入按钮」一行（2026-10-02） */
+.inv-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  padding: 10rpx 0 6rpx;
+}
+.inv-hint-row .inv-hint { padding: 0; flex: 1; }
+
+/* ---------------- 批量粘贴导入弹窗（2026-10-02） ---------------- */
+/* ⚠️ 必须用**双类** .dlg-mask.dlg-center（优先级 0,2,0）：
+   单类 .dlg-center（0,1,0）会被本文件后面的 .dlg-mask{ align-items:flex-end } 覆盖
+   → 弹窗被推到屏幕底部而非居中。口径与 mine.wxss 一致。
+   z-index 提到 400：高于 .dlg-mask(300) 与 .bottom-bar(50)，确保不被吸底栏压住。 */
+.dlg-mask.dlg-center { align-items: center; justify-content: center; padding: 0 40rpx; z-index: 400; }
+.import-panel {
+  width: 100%;
+  height: 82vh;            /* 确定高度：微信 scroll-view 必须父级有确定高度才会滚（只设限高不算），
+                              否则长预览顶破面板 → 底部「确认导入」被推出屏幕外、点不到（2026-10-02 加固） */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 28rpx 24rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, .18);
+}
+.import-title { font-size: 34rpx; font-weight: 700; color: #222; }
+.import-tip { margin-top: 10rpx; font-size: 22rpx; color: #999; line-height: 1.5; }
+.import-textarea {
+  margin-top: 18rpx;
+  width: 100%;
+  height: 220rpx;
+  box-sizing: border-box;
+  padding: 18rpx 20rpx;
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #333;
+  background: #F7F7F7;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+}
+.import-ph { color: #BBBBBB; font-size: 24rpx; }
+/* 顶行：一键读剪贴板（主） + 清空重填（次）—— 2026-10-02 加读剪贴板，绕开长按粘贴的机型差异 */
+.import-read-row { display: flex; align-items: center; justify-content: space-between; margin-top: 16rpx; }
+.import-read-btn { flex-shrink: 0; }
+.import-clear { font-size: 24rpx; color: #FA5151; padding: 6rpx 10rpx; }
+.import-clear-hover { opacity: .6; }
+
+.import-preview {
+  margin-top: 12rpx;
+  flex: 1;
+  min-height: 0;
+  min-height: 120rpx;
+  max-height: 42vh;
+  background: #FAFAFA;
+  border-radius: 12rpx;
+  padding: 12rpx 16rpx;
+}
+.import-stat { display: flex; flex-wrap: wrap; gap: 8rpx 20rpx; padding-bottom: 8rpx; border-bottom: 1rpx solid #EEE; }
+.istat { font-size: 24rpx; font-weight: 600; color: #333; }
+.istat.ok { color: #07C160; }
+.istat.chg { color: #E6A23C; }
+.istat.warn { color: #E34D59; }
+.istat.skip { color: #999; }
+.istat.alias { color: #1989FA; }
+
+.import-group { margin-top: 14rpx; }
+.import-group-title { font-size: 22rpx; color: #888; font-weight: 600; }
+.import-group-title.warn { color: #E34D59; }
+.import-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 0;
+  border-bottom: 1rpx dashed #F0F0F0;
+}
+.imp-name { flex: 1; font-size: 26rpx; color: #333; word-break: break-all; }
+.imp-name.warn { color: #E34D59; }
+/* 品名 + 「别名/匹配自」小标记 */
+.imp-name-wrap { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 8rpx; padding-right: 12rpx; }
+.imp-tag {
+  font-size: 20rpx;
+  color: #999;
+  background: #F2F2F2;
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+}
+.imp-tag.alias { color: #1989FA; background: #EAF3FF; }
+.imp-val { flex-shrink: 0; margin-left: 16rpx; font-size: 26rpx; color: #999; }
+.imp-val.changed { color: #1989FA; font-weight: 700; }
+
+.import-add-toggle { display: flex; align-items: center; gap: 12rpx; padding: 14rpx 0 4rpx; }
+.import-add-toggle-hover { opacity: .7; }
+.cbx {
+  width: 36rpx;
+  height: 36rpx;
+  flex-shrink: 0;
+  border: 2rpx solid #C8C8C8;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #fff;
+}
+.cbx.on { background: #FA5151; border-color: #FA5151; }
+.import-add-label { flex: 1; font-size: 24rpx; color: #666; }
+
+.import-empty { margin-top: 12rpx; padding: 32rpx 16rpx; text-align: center; }
+.import-empty-text { font-size: 24rpx; color: #BBB; line-height: 1.6; }
+
+.import-actions { display: flex; gap: 16rpx; margin-top: 20rpx; flex-shrink: 0; }
+
+/* ---------------- 底部吸底汇总栏 ---------------- */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  padding: 16rpx 24rpx 0;
+  background: #fff;
+  border-top: 1rpx solid #eee;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, .06);
+}
+.summary-row { display: flex; }
+.summary-stat { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.stat-label { font-size: 22rpx; color: #999; }
+.stat-value { margin-top: 4rpx; font-size: 32rpx; font-weight: 600; color: #333; }
+.stat-value.price { color: #FA5151; }
+.loss-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 0;
+}
+.loss-label { margin-right: 16rpx; font-size: 24rpx; color: #666; }
+.loss-stepper { display: flex; align-items: center; }
+/* 加减按钮：原 t-icon（远程字体加载失败 → 一片空白，点不到也看不见），2026-10-01 改原生文字 */
+.loss-btn {
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 52rpx;
+  text-align: center;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: var(--primary-color, #FA5151);
+  background: #FFF0F0;
+  border-radius: 50%;
+}
+.loss-btn-hover { opacity: .65; }
+.loss-value {
+  min-width: 80rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FA5151;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 12rpx;
+}
+.action-row t-button { margin: 0 10rpx; }
+.safe-area { height: env(safe-area-inset-bottom); }
+
+/* 原生按钮 .nb 基础样式已提到 app.wxss（全局），此处只留本页专属间距 */
+.action-row .nb { margin: 0 10rpx; }
+.popup-actions .nb { margin: 6rpx 8rpx; }
+
+/* ---------------- 弹窗（采购汇总 / 采购单预览）---------------- */
+/* 自绘原生弹层（2026-09-30）：t-popup 在本工程不可靠（同 t-input / t-icon / t-button）
+   → 改用原生 mask + 底部面板；mask 全屏半透明负责遮罩与「点击关闭」，panel 阻止冒泡。 */
+.dlg-mask { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 300; display: flex; align-items: flex-end; }
+/* 面板给「确定高度 + overflow:hidden」，把滚动权交给内部 .popup-scroll（微信 scroll-view 必须要有确定的父级高度才会滚）。
+   2026-09-30 修：原来 .popup-content 只有 max-height、没有 overflow，也没有确定高度 →
+   scroll-view 撑开不滚、内容顶破面板，底部「复制全文 / 分享 / 关闭」被推出屏幕外 → 表现为「无法复制采购单」。 */
+.dlg-panel { width: 100%; height: 88vh; display: flex; flex-direction: column; background: #fff; border-radius: 24rpx 24rpx 0 0; overflow: hidden; }
+
+.popup-content {
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 24rpx 24rpx 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+.popup-title { font-size: 32rpx; font-weight: 600; color: #333; }
+.popup-subtitle { margin-top: 8rpx; font-size: 24rpx; color: #999; }
+/* 已存桌面提示（带色 xlsx 落盘成功时才出现） */
+.popup-saved-hint {
+  margin-top: 10rpx;
+  padding: 10rpx 16rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #375623;
+  background: #E2EFDA;
+  border-radius: 8rpx;
+}
+/* 🆕 原料库查不到某原料时的警告（这类原料按 ¥0 算 ⇒ 采购金额偏低） */
+.popup-warn {
+  margin-top: 10rpx;
+  padding: 10rpx 16rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #833C0C;
+  background: #FCE4D6;
+  border-radius: 8rpx;
+}
+.popup-scroll {
+  flex: 1;
+  min-height: 0;
+  margin-top: 12rpx;
+}
+.popup-empty {
+  padding: 80rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.popup-empty-icon { font-size: 64rpx; }
+.popup-empty-text { margin-top: 12rpx; font-size: 26rpx; color: #999; }
+.popup-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-top: 1rpx solid #F0F0F0;
+}
+.total-label { font-size: 26rpx; color: #666; }
+.total-value { font-size: 34rpx; font-weight: 700; color: #FA5151; }
+.popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;            /* 三个按钮（复制/导出/关闭）自动换行，不挤成一团 */
+  flex-shrink: 0;             /* 固定在弹窗底部，不随内容滚动 */
+  padding: 12rpx 0 24rpx;
+}
+.popup-actions t-button { margin: 6rpx 8rpx; }
+/* 面板高度由 .dlg-panel 统一控制，preview 不再单独限高 */
+.preview-actions { flex-direction: column; }
+.preview-actions .nb { margin: 6rpx 0; }
+
+/* 并入预定备货开关 */
+.booking-toggle {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  padding: 14rpx 16rpx;
+  background: #FFF8E1;
+  border: 1rpx solid #FFE1A8;
+  border-radius: 12rpx;
+}
+.booking-toggle-hover { opacity: .85; }
+.booking-toggle-label { flex: 1; font-size: 26rpx; font-weight: 600; color: #A05A00; }
+.booking-toggle-tip { margin-right: 12rpx; font-size: 22rpx; color: #B98B4A; }
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 82rpx;
+  height: 46rpx;
+  border-radius: 999rpx;
+  background: #DDDDDD;
+  transition: background .2s;
+}
+.switch.on { background: #FA5151; }
+.switch-knob {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, .2);
+  transition: left .2s;
+}
+.switch.on .switch-knob { left: 40rpx; }
+.booking-date-row { display: flex; align-items: center; margin-top: 12rpx; }
+.booking-date-label { margin-right: 12rpx; font-size: 24rpx; color: #666; }
+.picker-box {
+  padding: 12rpx 16rpx;
+  background: #F7F7F7;
+  border-radius: 10rpx;
+  font-size: 24rpx;
+  color: #333;
+}
+.booking-date-picker { min-width: 280rpx; }
+.booking-date-hint { margin-top: 8rpx; font-size: 22rpx; color: #E34D59; }
+
+/* 供应商分组 */
+.supplier-group {
+  margin-bottom: 16rpx;
+  padding: 12rpx 16rpx;
+  background: #fff;
+  border: 1rpx solid #F0F0F0;
+  border-radius: 14rpx;
+}
+.supplier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+.supplier-export-btn,
+.supplier-row-count { font-size: 24rpx; color: #1989FA; }
+
+/* 原料行 */
+.material-row {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #F7F7F7;
+}
+.material-row:active { background: #FAFAFA; }
+.material-header-row {
+  padding: 8rpx 0;
+  border-bottom: 1rpx solid #EEEEEE;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #999;
+}
+.col-name { flex: 1; min-width: 0; font-size: 24rpx; color: #333; word-break: break-all; }
+.col-num { width: 140rpx; text-align: right; font-size: 24rpx; color: #666; }
+.col-buy { width: 150rpx; text-align: right; font-size: 24rpx; color: #333; }
+.col-buy.highlight { color: #FA5151; font-weight: 600; }
+.col-cost { width: 130rpx; text-align: right; font-size: 24rpx; color: #666; }
+.src-mark { font-size: 20rpx; color: #1989FA; }
+
+/* 溯源明细 */
+.src-box {
+  margin-bottom: 12rpx;
+  padding: 12rpx 16rpx;
+  background: #F8FAFF;
+  border-radius: 10rpx;
+}
+.src-item { margin-bottom: 10rpx; }
+.src-item:last-child { margin-bottom: 0; }
+.src-head { display: flex; align-items: center; justify-content: space-between; }
+.src-dish { font-size: 24rpx; font-weight: 600; color: #333; }
+.src-unit { font-size: 22rpx; color: #999; }
+.src-row { display: flex; align-items: center; padding: 6rpx 0; }
+.src-from { width: 96rpx; font-size: 22rpx; color: #666; }
+.from-booking { color: #FA5151; }
+.from-spot { color: #1989FA; }
+.from-gift { color: #ED7B2F; }
+.src-calc { flex: 1; font-size: 22rpx; color: #888; }
+.src-amt { width: 150rpx; text-align: right; font-size: 22rpx; color: #333; }
+
+/* 菜单汇总（散点 / 预定） */
+.menu-summary {
+  margin-bottom: 16rpx;
+  padding: 14rpx 16rpx;
+  background: #fff;
+  border: 1rpx solid #F0F0F0;
+  border-radius: 14rpx;
+}
+.spot-summary { background: #FFFBF5; border-color: #FFE1A8; }
+.menu-summary-title { margin-bottom: 10rpx; font-size: 26rpx; font-weight: 600; color: #333; }
+.menu-item { padding: 10rpx 0; border-bottom: 1rpx solid #F7F7F7; }
+.menu-item:last-child { border-bottom: none; }
+.menu-item-head { display: flex; align-items: center; }
+.menu-seq { width: 44rpx; font-size: 22rpx; color: #999; }
+.menu-setmeal { flex: 1; min-width: 0; font-size: 26rpx; font-weight: 600; color: #333; }
+.menu-qty { font-size: 24rpx; color: #FA5151; }
+.menu-gift { font-size: 22rpx; color: #ED7B2F; }
+.menu-meta { padding: 4rpx 0 0 44rpx; font-size: 22rpx; color: #999; }
+.menu-remark { padding: 4rpx 0 0 44rpx; font-size: 22rpx; color: #8a6d3b; }
+.menu-line { padding: 4rpx 0 0 44rpx; font-size: 22rpx; color: #666; }
+.menu-swap { padding: 4rpx 0 0 44rpx; font-size: 22rpx; color: #ED7B2F; }
+.menu-extra { padding: 4rpx 0 0 44rpx; font-size: 22rpx; color: #1989FA; }

@@ -1,0 +1,9 @@
+{
+  "name": "thermo-order-app",
+  "version": "1.0.0",
+  "description": "热力学餐厅订货管理小程序",
+  "private": true,
+  "dependencies": {
+    "tdesign-miniprogram": "^1.15.2"
+  }
+}

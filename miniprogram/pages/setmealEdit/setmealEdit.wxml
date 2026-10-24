@@ -1,0 +1,87 @@
+<!-- 套餐组成设置：成人套餐(团队)换菜，改完全局生效 -->
+<view class="page">
+
+  <!-- 说明卡 -->
+  <view class="tip-card">
+    <text class="tip-title">成人套餐换菜（长期生效）</text>
+    <text class="tip-line">改这里 = 改套餐默认组成，订货、预定、备货全部按新组成走，不用改代码。</text>
+    <text class="tip-line">只想改某一单？去「预定」页用「仅此单换菜」，不影响默认。</text>
+  </view>
+
+  <!-- 套餐列表 -->
+  <view class="meal-card" wx:for="{{meals}}" wx:key="_id">
+    <view class="meal-head">
+      <view class="meal-title">
+        <text class="meal-name">{{item.name}}</text>
+        <text class="badge" wx:if="{{item._overridden}}">已自定义</text>
+      </view>
+      <text class="meal-price">¥{{item.price}}</text>
+    </view>
+
+    <!-- 查看态 -->
+    <block wx:if="{{editingId !== item._id}}">
+      <view class="dish-row" wx:for="{{item.itemsView}}" wx:for-item="d" wx:for-index="di" wx:key="key">
+        <text class="dish-name {{d.missing ? 'missing' : ''}}">{{d.dishName}}{{d.missing ? '（菜品缺失）' : ''}}</text>
+        <text class="dish-qty">×{{d.qty}}</text>
+        <text class="dish-cost">¥{{d.cost}}</text>
+      </view>
+      <view class="meal-foot">
+        <text class="foot-item">成本 ¥{{item.totalCost}}</text>
+        <text class="foot-item">利润 ¥{{item.profit}}</text>
+        <text class="foot-item">毛利 {{item.grossRateText}}</text>
+      </view>
+      <view class="btn-row">
+        <view class="btn btn-main" data-id="{{item._id}}" bindtap="onStartEdit">换菜 / 改组成</view>
+        <view class="btn btn-plain" wx:if="{{item._overridden}}" data-id="{{item._id}}" bindtap="onReset">恢复默认</view>
+      </view>
+    </block>
+
+    <!-- 编辑态 -->
+    <block wx:else>
+      <view class="edit-row" wx:for="{{editItems}}" wx:for-item="d" wx:for-index="idx" wx:key="key">
+        <text class="edit-name">{{d.dishName}}</text>
+        <view class="qty-box">
+          <view class="qty-btn" data-idx="{{idx}}" data-delta="-1" bindtap="onQtyStep">−</view>
+          <text class="qty-val">{{d.qty}}</text>
+          <view class="qty-btn" data-idx="{{idx}}" data-delta="1" bindtap="onQtyStep">＋</view>
+        </view>
+        <view class="row-act" data-idx="{{idx}}" bindtap="onReplaceItem">换</view>
+        <view class="row-act del" data-idx="{{idx}}" bindtap="onRemoveItem">删</view>
+      </view>
+
+      <view class="edit-foot">
+        <text class="ef-text">预估成本 ¥{{editCost}} · 利润 ¥{{editProfit}} · 毛利 {{editGrossText}}</text>
+      </view>
+
+      <view class="btn-row">
+        <view class="btn btn-plain" bindtap="onAddItem">＋ 添加菜</view>
+        <view class="btn btn-main" bindtap="onSaveEdit">保存</view>
+        <view class="btn btn-plain" bindtap="onCancelEdit">取消</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="empty" wx:if="{{meals.length === 0}}">暂无成人套餐（团队），请先在菜单里建套餐</view>
+
+  <view class="safe-bottom" />
+</view>
+
+<!-- 选菜弹窗（原生弹层：t-popup 在本工程打不开） -->
+<view wx:if="{{showPicker}}" class="dlg-mask" bindtap="onPickerCancel">
+  <view class="dlg-panel picker-panel" catchtap="onNoop">
+    <view class="picker">
+      <view class="picker-head">
+        <text class="ph-title">{{pickerMode === 'replace' ? '换成哪道菜' : '添加菜品'}}</text>
+        <text class="ph-close" bindtap="onPickerCancel">关闭</text>
+      </view>
+      <input class="picker-search" placeholder="搜索菜名" placeholder-class="inp-ph" value="{{searchKw}}" bindinput="onSearchInput" />
+      <scroll-view scroll-y class="picker-list">
+        <view class="picker-item" wx:for="{{filteredDishes}}" wx:key="_id" data-id="{{item._id}}" bindtap="onPickDish">
+          <text class="pi-name">{{item.dishName}}</text>
+          <text class="pi-cost">成本 ¥{{item.costText}}</text>
+        </view>
+        <view class="picker-empty" wx:if="{{filteredDishes.length === 0}}">无匹配菜品</view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

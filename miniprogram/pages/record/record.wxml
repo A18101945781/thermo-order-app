@@ -1,0 +1,85 @@
+<!-- 历史订货记录报表页 - 日期筛选 + 订单卡片列表 + 分页 -->
+<view class="page">
+  <!-- 日期范围选择器 -->
+  <view class="date-bar">
+    <view class="date-item" bindtap="onPickStartDate">
+      <text class="date-label">开始</text>
+      <text class="date-value">{{startDate || '选择日期'}}</text>
+    </view>
+    <text class="date-sep">至</text>
+    <view class="date-item" bindtap="onPickEndDate">
+      <text class="date-label">结束</text>
+      <text class="date-value">{{endDate || '选择日期'}}</text>
+    </view>
+    <view class="date-clear" wx:if="{{startDate || endDate}}" bindtap="onClearDate">
+      <text class="clear-x">✕</text>
+    </view>
+  </view>
+
+  <!-- 订单卡片列表 -->
+  <scroll-view class="order-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{_saScrollTop}}" bindscroll="onScroll" bind:scrolltolower="onLoadMore">
+    <view class="order-list" wx:if="{{orderList.length > 0}}">
+      <view class="order-card" wx:for="{{orderList}}" wx:key="_id">
+        <!-- 订单基础信息 -->
+        <view class="order-header" bindtap="onToggleExpand" data-id="{{item._id}}">
+          <view class="order-header-left">
+            <text class="order-time">{{item.createTimeStr}}</text>
+            <text class="order-operator">操作人：{{item.operator}}</text>
+          </view>
+          <view class="order-header-right">
+            <text class="order-money">¥{{item.totalMoney}}</text>
+            <text class="chev">{{expandedId === item._id ? '▲' : '▼'}}</text>
+          </view>
+        </view>
+
+        <!-- 订单摘要标签 -->
+        <view class="order-tags">
+          <text class="mini-tag">损耗率 {{item.lossRate}}</text>
+          <text class="mini-tag">{{item.dishCount}} 份菜品</text>
+        </view>
+
+        <!-- 展开的原料明细 -->
+        <view class="order-detail" wx:if="{{expandedId === item._id}}">
+          <view class="detail-title">原料明细</view>
+          <view class="detail-row detail-header">
+            <text class="col-name">原料名</text>
+            <text class="col-num">用量</text>
+            <text class="col-buy">建议采购</text>
+            <text class="col-cost">金额</text>
+          </view>
+          <view class="detail-row" wx:for="{{item.materialTotal}}" wx:for-item="m" wx:key="name">
+            <text class="col-name">{{m.name}}</text>
+            <text class="col-num">{{m.totalUseNum}}{{m.unit}}</text>
+            <text class="col-buy">{{m.suggestBuy}}</text>
+            <text class="col-cost">¥{{m.suggestCost}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore}}">
+      <view class="loading-spinner sm"></view>
+      <text class="load-text">加载更多...</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore && orderList.length > 0}}">
+      <text>— 没有更多了 —</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{orderList.length === 0 && !loading}}">
+      <text class="empty-icon">📊</text>
+      <text class="empty-text">暂无订货记录</text>
+      <text class="empty-desc">使用订货计算器创建订单后将在此显示</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="load-text">加载中...</text>
+    </view>
+  </scroll-view>
+
+  <!-- Toast：全项目统一用原生 wx.showToast，tdesign t-toast 从未被调用，标记已移除 -->
+<scroll-anchor show="{{showScrollAnchor}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

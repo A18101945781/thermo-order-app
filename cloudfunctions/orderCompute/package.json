@@ -1,0 +1,9 @@
+{
+  "name": "orderCompute",
+  "version": "1.0.0",
+  "description": "订单计算云函数 - 根据订单列表计算原料总用量与总金额",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

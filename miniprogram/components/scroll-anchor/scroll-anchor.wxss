@@ -1,0 +1,64 @@
+/* scroll-anchor 滚动定位锚点（老花友好：右侧竖向轨道 + 放大红圈科奇头像滑块） */
+/* 透明容器：只作 thumb 的定位参考 —— 不画轨道、不拦点击
+   （2026-09-27 用户要求去掉「科奇头上那条红线」；轨道只留下定位作用） */
+.sa-track {
+  position: fixed;
+  right: 6rpx;
+  top: 0;
+  height: 100vh;
+  width: 88rpx;
+  z-index: 999;
+  background: transparent;
+  border: none;
+  pointer-events: none; /* 让页面右侧的点击穿透过去，不再被轨道挡住 */
+  box-sizing: border-box;
+}
+
+.sa-thumb {
+  position: absolute;
+  left: 50%;
+  pointer-events: auto; /* 只有头像本身可拖拽（轨道已设为 none） */
+  transform: translate(-50%, -50%); /* 中心对齐 progress% 处 */
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 8rpx solid #fa5151;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* 拖动中：放大 + 加重阴影，手指/鼠标更好抓 */
+.sa-thumb-drag {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 12rpx 32rpx rgba(250, 81, 81, 0.55);
+  border-color: #d93b3b;
+}
+
+.sa-thumb-hover {
+  transform: translate(-50%, -50%) scale(0.94);
+}
+
+.sa-img {
+  width: 116rpx;
+  height: 116rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+}
+
+.sa-pct {
+  position: absolute;
+  bottom: -40rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #fa5151;
+  background: #ffffff;
+  padding: 4rpx 14rpx;
+  border-radius: 14rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}

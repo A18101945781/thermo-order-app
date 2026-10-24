@@ -1,0 +1,130 @@
+/* MaterialTable 原料超级表格组件样式 */
+.material-table {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.06);
+}
+
+/* 表头 */
+.table-header {
+  display: flex;
+  background: #F8F8F8;
+  padding: 20rpx 16rpx;
+  border-bottom: 2rpx solid #E7E7E7;
+}
+.header-cell {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: 500;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* 列宽 */
+.col-name { width: 160rpx; text-align: left; }
+.col-supplier { width: 140rpx; }
+.col-price { width: 120rpx; }
+.col-unit { width: 80rpx; }
+.col-stock { width: 100rpx; }
+.col-status { width: 100rpx; }
+.col-action { width: 160rpx; }
+.col-category { width: 100rpx; }
+
+/* 表体 */
+.table-body {
+  max-height: 900rpx;
+}
+.table-row {
+  display: flex;
+  padding: 20rpx 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  align-items: center;
+}
+.table-row:active {
+  background: #FAFAFA;
+}
+
+.row-cell {
+  font-size: 26rpx;
+  color: #333;
+  text-align: center;
+  flex-shrink: 0;
+}
+.row-cell.col-name {
+  text-align: left;
+}
+
+.material-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.supplier-text {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.price-high { color: #E34D59; font-weight: 600; }
+.price-normal { color: #333; }
+.stock-low { color: #E34D59; font-weight: 600; }
+.stock-normal { color: #333; }
+
+/* 快调模式：库存列变 input */
+.stock-input {
+  width: 100%;
+  height: 44rpx;
+  line-height: 44rpx;
+  font-size: 24rpx;
+  text-align: center;
+  border: 2rpx solid #FA5151;
+  border-radius: 8rpx;
+  padding: 0 6rpx;
+  background: #FFF8F8;
+  color: #333;
+  box-sizing: border-box;
+}
+.stock-input-low {
+  border-color: #E34D59;
+  background: #FFEAEC;
+  color: #E34D59;
+  font-weight: 600;
+}
+
+.text-danger { color: #E34D59; }
+.text-warning { color: #ED7B2F; }
+.text-success { color: #00A870; }
+
+/* 操作按钮 */
+.action-btn {
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  margin-right: 8rpx;
+  display: inline-block;
+}
+.edit-btn {
+  background: #FFE8E8;
+  color: #FA5151;
+}
+.delete-btn {
+  background: #F5F5F5;
+  color: #999;
+}
+
+/* 空状态 */
+.empty-row {
+  padding: 80rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 底部统计 */
+.table-footer {
+  padding: 16rpx;
+  text-align: right;
+  font-size: 22rpx;
+  color: #999;
+  border-top: 1rpx solid #F0F0F0;
+}

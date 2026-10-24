@@ -1,0 +1,65 @@
+/* SearchBar 搜索栏组件样式 */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background-color: #FFFFFF;
+}
+
+.search-inner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 68rpx;
+  background-color: #F5F5F5;
+  border-radius: 34rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+
+.search-inner:focus-within {
+  background-color: #EEEEEE;
+}
+
+.search-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  font-size: 28rpx;
+  color: #333333;
+  background-color: transparent;
+}
+
+.search-input::placeholder {
+  color: #CCCCCC;
+}
+
+.search-clear {
+  font-size: 24rpx;
+  color: #CCCCCC;
+  padding: 4rpx 8rpx;
+  flex-shrink: 0;
+}
+
+.search-clear:active {
+  color: #FA5151;
+}
+
+.search-cancel {
+  font-size: 28rpx;
+  color: #666666;
+  padding: 0 16rpx;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.search-cancel:active {
+  color: #FA5151;
+}

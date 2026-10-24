@@ -1,0 +1,237 @@
+<!-- 成本看板 —— 成本核算方案 M7 报表与看板
+     入口：我的 → 成本看板
+     全部数字实时算、不缓存；假设参数集中在「改假设」里，改完全表联动 -->
+<view class="page">
+
+  <!-- 错误态 -->
+  <view wx:if="{{errMsg}}" class="err-card">
+    <text class="err-text">{{errMsg}}</text>
+  </view>
+
+  <!-- ① 核算假设条 -->
+  <view class="param-card">
+    <view class="param-head">
+      <text class="param-title">核算假设</text>
+      <view class="param-edit" hover-class="nb-hover" hover-stay-time="80" bindtap="openParams">改假设</view>
+    </view>
+    <view class="chips">
+      <view class="chip" wx:for="{{paramChips}}" wx:key="label">
+        <text class="chip-v">{{item.value}}</text>
+        <text class="chip-l">{{item.label}}</text>
+      </view>
+    </view>
+    <text class="param-foot" wx:if="{{!paramsAllDefault}}">已按你的设置计算（非默认值）</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-card">正在计算…</view>
+
+  <block wx:else>
+    <!-- ② 核心指标 -->
+    <view class="card">
+      <text class="section-title">核心指标</text>
+      <view class="kpi-grid">
+        <view class="kpi">
+          <text class="kpi-v">{{stats.dishTotal}}</text>
+          <text class="kpi-l">菜品总数</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">{{stats.onSaleCount}}</text>
+          <text class="kpi-l">在售菜品</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">{{stats.pricedCount}}</text>
+          <text class="kpi-l">已定价 · 参与毛利</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">¥{{stats.avgBomCostText}}</text>
+          <text class="kpi-l">平均配方成本</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">¥{{stats.avgFullCostText}}</text>
+          <text class="kpi-l">平均完全成本</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">{{stats.avgGrossRateText}}</text>
+          <text class="kpi-l">平均毛利率</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v kpi-danger">{{stats.belowWarnCount}}</text>
+          <text class="kpi-l">低于预警线</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v kpi-warn">{{stats.needRaiseCount}}</text>
+          <text class="kpi-l">建议上调</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">¥{{stats.inventoryAmountText}}</text>
+          <text class="kpi-l">库存结存金额</text>
+        </view>
+        <view class="kpi">
+          <text class="kpi-v">{{stats.materialCount}}</text>
+          <text class="kpi-l">原料项数</text>
+        </view>
+      </view>
+      <text class="note" wx:if="{{inv.skipped > 0}}">库存金额已计入 {{inv.counted}} 个原料；另有 {{inv.skipped}} 条映射未配置（原料名与换算系数都缺），未计入</text>
+      <text class="note" wx:if="{{inv.usedBaseline > 0}}">另有 {{inv.usedBaseline}} 项用的是出厂基线，不是实测盘点数</text>
+      <text class="note">平均毛利率只统计「已定价」菜品；售价为 0 的套餐组件不参与，避免拉低均值。</text>
+    </view>
+
+    <!-- ③ 毛利率四档分布 -->
+    <view class="card">
+      <text class="section-title">毛利率分布（{{stats.pricedCount}} 道已定价）</text>
+      <view class="bucket" wx:for="{{buckets}}" wx:key="key">
+        <view class="bkt-head">
+          <text class="bkt-label">{{item.label}}</text>
+          <text class="bkt-num">{{item.count}} 道 · {{item.pct}}%</text>
+        </view>
+        <view class="bkt-track">
+          <view class="bkt-fill {{item.cls}}" style="width:{{item.pct}}%"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ④ 分类对比 -->
+    <view class="card">
+      <text class="section-title">分类对比</text>
+      <view class="ct-row ct-head">
+        <text class="ct-c1">分类</text>
+        <text class="ct-c2">菜数</text>
+        <text class="ct-c3">平均成本</text>
+        <text class="ct-c4">平均毛利率</text>
+      </view>
+      <view class="ct-row" wx:for="{{catRows}}" wx:key="category">
+        <text class="ct-c1">{{item.category}}</text>
+        <text class="ct-c2">{{item.count}}</text>
+        <text class="ct-c3">¥{{item.avgFullCost}}</text>
+        <view class="ct-c4">
+          <text class="{{item.levelClass}}">{{item.rateText}}</text>
+        </view>
+      </view>
+      <text class="note">低毛利菜品数：<text wx:for="{{catRows}}" wx:key="category">{{item.category}} {{item.lowCount}}<text wx:if="{{index < catRows.length - 1}}"> · </text></text></text>
+    </view>
+
+    <!-- ⑤ 建议调价清单 -->
+    <view class="card">
+      <text class="section-title">建议调价（{{stats.needRaiseCount}} 道 · 每份合计 +¥{{stats.raiseTotalText}}）</text>
+      <text class="note">建议售价 = 完全成本 ÷（1 − 目标毛利率），是保毛利定价，不是成本加成。</text>
+      <view class="raise-row" wx:for="{{raiseShown}}" wx:key="dishId">
+        <view class="raise-main">
+          <text class="raise-name">{{item.dishName}}</text>
+          <text class="raise-meta">{{item.dishCategory}} · 完全成本 ¥{{item.fullCost}}</text>
+        </view>
+        <view class="raise-right">
+          <text class="raise-price">¥{{item.sellPrice}} → ¥{{item.suggestPrice}}</text>
+          <text class="raise-diff">{{item.diffText}} 元／份（{{item.diffRateText}}）</text>
+        </view>
+      </view>
+      <view wx:if="{{raiseRows.length > raiseLimit}}" class="more" hover-class="more-hover" hover-stay-time="80" bindtap="moreRaise">
+        展开其余 {{raiseRows.length - raiseLimit}} 道
+      </view>
+      <view wx:if="{{raiseRows.length === 0}}" class="empty-note">全部菜品都已达到目标毛利率，无需调价。</view>
+    </view>
+
+    <!-- ⑥ 异常清单 -->
+    <view class="card">
+      <text class="section-title">异常清单（{{anomalyRows.length}} 条）</text>
+      <view class="ano-types" wx:if="{{anomalyByType.length}}">
+        <text class="ano-type" wx:for="{{anomalyByType}}" wx:key="text">{{item.text}} {{item.count}}</text>
+      </view>
+      <view class="ano-row" wx:for="{{anomalyShown}}" wx:key="index">
+        <text class="ano-tag s-{{item.severity}}">{{item.typeText}}</text>
+        <view class="ano-main">
+          <text class="ano-name">{{item.dishName}}</text>
+          <text class="ano-detail">{{item.detail}}</text>
+        </view>
+      </view>
+      <view wx:if="{{anomalyRows.length > anomalyLimit}}" class="more" hover-class="more-hover" hover-stay-time="80" bindtap="moreAnomaly">
+        展开其余 {{anomalyRows.length - anomalyLimit}} 条
+      </view>
+      <view wx:if="{{anomalyRows.length === 0}}" class="empty-note">没有发现配方为空 / 原料失配 / 价格缺失等问题。</view>
+    </view>
+
+    <!-- ⑦ 最近调价（方案 M5 留痕） -->
+    <view class="card">
+      <text class="section-title">最近调价（{{priceLogRows.length}} 条）</text>
+      <text class="note">记录原料价格的每一次变动，供月度复盘与对账倒查。改原料价时自动记一笔。</text>
+      <view class="pl-row" wx:for="{{priceLogRows}}" wx:key="_id">
+        <view class="pl-main">
+          <text class="pl-name">{{item.name}}</text>
+          <text class="pl-time">{{item.timeText}}</text>
+        </view>
+        <view class="pl-right">
+          <text class="pl-price">{{item.fromText}} → {{item.toText}}</text>
+          <text class="pl-delta {{item.up ? 'up' : 'down'}}">{{item.deltaText}}</text>
+        </view>
+      </view>
+      <view wx:if="{{priceLogRows.length === 0}}" class="empty-note">还没有调价记录。</view>
+    </view>
+
+    <view class="foot-note">数据实时读取，改配方或改价后回到本页会自动重算。</view>
+  </block>
+
+  <!-- 假设参数弹层（原生弹层；面板必须确定高度 + overflow:hidden，否则 scroll-view 不滚） -->
+  <view wx:if="{{showParamDlg}}" class="dlg-mask" bindtap="closeParams">
+    <view class="dlg-panel" catchtap="noop">
+      <view class="dlg-head">
+        <text class="dlg-title">核算假设</text>
+        <text class="dlg-close" bindtap="closeParams">✕</text>
+      </view>
+      <scroll-view class="dlg-body" scroll-y>
+        <text class="dlg-note">假设集中在这一处，保存后全表联动重算。比率填百分数，例如 82.9 表示 82.9%。</text>
+
+        <view class="fld">
+          <text class="fld-l">综合损耗率</text>
+          <view class="fld-r">
+            <input class="fld-inp" type="digit" value="{{editParam.lossRatePct}}" data-k="lossRatePct" bindinput="onParamInput" />
+            <text class="fld-u">%</text>
+          </view>
+          <text class="fld-h">生鲜择洗 / 切配 / 报废统一并入该系数，不逐原料设置。尚未实测，建议先用 0。</text>
+        </view>
+
+        <view class="fld">
+          <text class="fld-l">人工能耗分摊</text>
+          <view class="fld-r">
+            <text class="fld-u">¥</text>
+            <input class="fld-inp" type="digit" value="{{editParam.laborPerPortion}}" data-k="laborPerPortion" bindinput="onParamInput" />
+            <text class="fld-u">/份</text>
+          </view>
+          <text class="fld-h">填 0 表示不计入。完全成本 = 配方成本 ×（1 + 损耗率）+ 本项。</text>
+        </view>
+
+        <view class="fld">
+          <text class="fld-l">目标毛利率</text>
+          <view class="fld-r">
+            <input class="fld-inp" type="digit" value="{{editParam.targetGrossRatePct}}" data-k="targetGrossRatePct" bindinput="onParamInput" />
+            <text class="fld-u">%</text>
+          </view>
+          <text class="fld-h">建议售价按它倒推：完全成本 ÷（1 − 目标毛利率）。必须小于 100。</text>
+        </view>
+
+        <view class="fld">
+          <text class="fld-l">毛利率预警线</text>
+          <view class="fld-r">
+            <input class="fld-inp" type="digit" value="{{editParam.warnRatePct}}" data-k="warnRatePct" bindinput="onParamInput" />
+            <text class="fld-u">%</text>
+          </view>
+          <text class="fld-h">低于此值计入「建议调价」清单。</text>
+        </view>
+
+        <view class="fld">
+          <text class="fld-l">毛利率优秀线</text>
+          <view class="fld-r">
+            <input class="fld-inp" type="digit" value="{{editParam.goodRatePct}}" data-k="goodRatePct" bindinput="onParamInput" />
+            <text class="fld-u">%</text>
+          </view>
+          <text class="fld-h">达到或超过此值标为「优秀」。需高于预警线。</text>
+        </view>
+
+        <view class="fld-note">中间档 80% 是方案固定分界，不随上面两项改动。</view>
+      </scroll-view>
+      <view class="dlg-acts">
+        <view class="nb nb-default dlg-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="resetParams">还原默认</view>
+        <view class="nb dlg-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="saveParams">保存并重算</view>
+      </view>
+    </view>
+  </view>
+
+</view>

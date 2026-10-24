@@ -1,0 +1,19 @@
+{
+  "collection": "material",
+  "description": "原料清单超级表",
+  "fields": {
+    "_id": { "type": "string", "description": "自动生成的记录ID" },
+    "name": { "type": "string", "description": "原料名称", "required": true },
+    "price": { "type": "number", "description": "单价(元)", "required": true },
+    "unit": { "type": "string", "description": "单位(kg/个/包等)" },
+    "category": { "type": "string", "description": "分类(主食/海鲜/肉类/蔬菜/水果/调料/饮品/甜品/包装/其他/未分类)" },
+    "supplier": { "type": "string", "description": "供应商(好生活/松食配送/瑞淮/赛大厨/申美)" },
+    "initStock": { "type": "number", "description": "期初库存", "default": 0 },
+    "inStock": { "type": "number", "description": "本期入库", "default": 0 },
+    "outStock": { "type": "number", "description": "本期出库", "default": 0 },
+    "curStock": { "type": "number", "description": "当前库存(=期初+入库-出库)", "default": 0 },
+    "minStock": { "type": "number", "description": "最低库存预警线", "default": 0 },
+    "remark": { "type": "string", "description": "备注" },
+    "createTime": { "type": "number", "description": "创建时间戳" }
+  }
+}

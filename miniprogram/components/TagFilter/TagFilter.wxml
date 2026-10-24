@@ -1,0 +1,17 @@
+<!-- TagFilter 标签筛选组件 -->
+<view class="tag-filter" wx:if="{{tags && tags.length > 0}}">
+  <text class="tag-title" wx:if="{{title}}">{{title}}</text>
+  <scroll-view class="tag-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="tag-list">
+      <view
+        wx:for="{{tags}}"
+        wx:key="*this"
+        class="tag-item {{item === active ? 'tag-active' : ''}}"
+        bindtap="onTagTap"
+        data-tag="{{item}}"
+      >
+        {{item}}
+      </view>
+    </view>
+  </scroll-view>
+</view>

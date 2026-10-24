@@ -1,0 +1,220 @@
+/* 历史订货记录报表样式 */
+.page {
+  min-height: 100vh;
+  background: var(--bg-color, #F5F5F5);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 日期选择栏 */
+.date-bar {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background: var(--card-bg, #FFFFFF);
+  gap: 12rpx;
+}
+
+.date-item {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx;
+  background: #F5F5F5;
+  border-radius: 12rpx;
+}
+
+.date-label {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  display: block;
+}
+
+.date-value {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-primary, #333333);
+  display: block;
+  margin-top: 4rpx;
+}
+
+.date-sep {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+}
+
+.date-clear {
+  padding: 8rpx;
+}
+/* 清除日期：原 t-icon name="close-circle"（远程字体加载失败→看不见），改原生文字 2026-10-01 */
+.clear-x {
+  font-size: 32rpx;
+  color: #999999;
+  line-height: 1;
+  padding: 0 8rpx;
+}
+
+/* 订单滚动区 */
+.order-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.order-list {
+  padding: 16rpx 24rpx;
+}
+
+/* 订单卡片 */
+.order-card {
+  background: var(--card-bg, #FFFFFF);
+  border-radius: var(--radius, 16rpx);
+  box-shadow: var(--shadow, 0 4rpx 16rpx rgba(0,0,0,0.06));
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-time {
+  font-size: var(--font-base, 28rpx);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  margin-bottom: 4rpx;
+}
+
+.order-operator {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+}
+
+.order-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.order-money {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 700;
+  color: var(--primary-color, #FA5151);
+}
+
+/* 展开箭头：原 t-icon chevron-up/down（不渲染）→ 原生三角，2026-10-01 */
+.chev {
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 1;
+}
+
+/* 订单标签：原 t-tag（tdesign）→ 原生小标签 */
+.order-tags {
+  display: flex;
+  gap: 12rpx;
+  padding: 12rpx 0;
+}
+.mini-tag {
+  font-size: var(--font-xs, 20rpx);
+  color: #666666;
+  background: #F5F5F5;
+  border-radius: 8rpx;
+  padding: 4rpx 14rpx;
+}
+
+/* 展开的原料明细 */
+.order-detail {
+  border-top: 1rpx solid #F5F5F5;
+  padding-top: 16rpx;
+}
+
+.detail-title {
+  font-size: var(--font-sm, 24rpx);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  margin-bottom: 12rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 0;
+  border-bottom: 1rpx dashed #F0F0F0;
+}
+
+.detail-header {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  font-weight: 600;
+}
+
+.col-name { flex: 1.5; font-size: var(--font-sm, 24rpx); }
+.col-num { flex: 1; text-align: center; font-size: var(--font-sm, 24rpx); }
+.col-buy { flex: 1; text-align: center; color: #FF9800; font-size: var(--font-sm, 24rpx); }
+.col-cost { flex: 1; text-align: right; color: var(--primary-color, #FA5151); font-size: var(--font-sm, 24rpx); }
+
+/* 加载更多 */
+.load-more,
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+}
+
+/* CSS 转圈（原来是 t-icon name="loading"：远程字体加载失败 → 一片空白）2026-10-01 */
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #ECECEC;
+  border-top-color: #999999;
+  border-radius: 50%;
+  animation: lspin .8s linear infinite;
+}
+.loading-spinner.sm { width: 32rpx; height: 32rpx; border-width: 3rpx; }
+@keyframes lspin { to { transform: rotate(360deg); } }
+
+.load-text {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  margin-left: 12rpx;
+}
+
+.no-more {
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 160rpx 0;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: var(--font-base, 28rpx);
+  color: var(--text-secondary, #999999);
+}
+
+.empty-desc {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  margin-top: 8rpx;
+  text-align: center;
+  padding: 0 48rpx;
+}

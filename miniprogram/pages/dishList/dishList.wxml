@@ -1,0 +1,97 @@
+<!-- 菜品菜单页 - 二态切换:菜品(售卖单品) / 套餐 + SOP录入入口 -->
+<view class="page">
+  <!-- 未就绪占位 -->
+  <view wx:if="{{!pageReady}}" class="boot-placeholder">
+    <text class="boot-icon">🍽️</text>
+    <text class="boot-text">正在加载菜品...</text>
+  </view>
+
+  <block wx:else>
+    <!-- 二态切换:菜品 / 套餐 -->
+    <view class="tab-row">
+      <view class="tab-item {{activeType==='dish'?'active':''}}" data-type="dish" bindtap="onTypeChange">
+        <text class="tab-icon">🍽️</text>
+        <text class="tab-label">菜品</text>
+        <text class="tab-count">{{dishCount}}</text>
+      </view>
+      <view class="tab-item {{activeType==='meal'?'active':''}}" data-type="meal" bindtap="onTypeChange">
+        <text class="tab-icon">🎁</text>
+        <text class="tab-label">套餐</text>
+        <text class="tab-count">{{mealCount}}</text>
+      </view>
+    </view>
+
+    <!-- 搜索栏组件(仅菜品态) -->
+    <view class="search-wrapper" wx:if="{{activeType==='dish'}}">
+      <SearchBar placeholder="搜索菜品名称" bind:search="onSearch" bind:clear="onSearchClear" />
+    </view>
+
+    <!-- 分类快捷筛选条（2026-10-02）：点芯片只显示该类；'全部'=平铺并显示分组标题 -->
+    <view class="cat-filter" wx:if="{{activeType==='dish' && catTabs.length > 1}}">
+      <scroll-view class="cat-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view class="cat-chip {{activeCat === item.name ? 'active' : ''}}"
+          wx:for="{{catTabs}}" wx:key="name"
+          data-cat="{{item.name}}" bindtap="onCatChange">
+          <text class="cat-chip-name">{{item.name}}</text>
+          <text class="cat-chip-count">{{item.count}}</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 菜品卡片网格：单品 + SOP，按菜单分类(经典主食/西式主食/现煮面食/缤纷小食/其他)分组 -->
+    <view class="dish-grid" wx:if="{{activeType==='dish' && filteredList.length > 0}}">
+      <block wx:for="{{filteredList}}" wx:key="_id">
+        <view class="cat-head cat-head-grid" wx:if="{{item.catFirst}}">{{item.catName}}</view>
+        <view class="dish-grid-item" bindtap="onTapDish" data-id="{{item._id}}">
+          <DishCard dish="{{item}}" />
+        </view>
+      </block>
+    </view>
+
+    <!-- 套餐两列布局:左团队 / 右单人,按价格升序对齐 -->
+    <view class="meal-rows" wx:if="{{activeType==='meal' && mealRows.length > 0}}">
+      <view class="meal-row" wx:for="{{mealRows}}" wx:for-item="row" wx:for-index="rowIdx" wx:key="rowIdx">
+        <view class="meal-cell">
+          <view wx:if="{{row.right}}" class="meal-card cat-single" bindtap="onTapMeal" data-id="{{row.right._id}}">
+            <view class="meal-tag tag-single">🧍 单人</view>
+            <view class="meal-head">
+              <text class="meal-name">{{row.right.name}}</text>
+            </view>
+            <view class="meal-desc">{{row.right.desc}}</view>
+            <view class="meal-price-row">
+              <text class="meal-price-label">套餐价</text>
+              <text class="meal-price">¥{{row.right.price}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{((activeType==='dish' && filteredList.length === 0) || (activeType==='meal' && mealRows.length === 0)) && !loading}}">
+      <text class="empty-icon">{{activeType==='dish' ? '🍽️' : '🎁'}}</text>
+      <text class="empty-text">暂无{{activeType==='dish' ? '菜品' : '套餐'}}数据</text>
+      <text class="empty-desc" wx:if="{{activeType==='dish' && searchText}}">未找到"{{searchText}}"相关菜品</text>
+      <text class="empty-desc" wx:else>请先在首页完成登录,系统会自动注入示例数据</text>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 双悬浮操作按钮 - boss/采购可操作 -->
+    <view class="fab-group" wx:if="{{canAdd && activeType==='dish'}}">
+      <view class="fab fab-secondary" bindtap="onAddSop">
+        <text class="fab-label">📋 录入SOP</text>
+      </view>
+      <view class="fab" hover-class="fab-hover" hover-stay-time="80" bindtap="onAddDish">
+        <text class="fab-plus">＋</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- Toast：全项目统一用原生 wx.showToast，tdesign t-toast 从未被调用，标记已移除 -->
+  <scroll-anchor show="{{showScrollAnchor}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

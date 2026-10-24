@@ -1,0 +1,228 @@
+/* app.wxss — 全局样式 */
+page {
+  --color-primary: #FA5151;
+  --color-primary-light: #FFE8E8;
+  --color-success: #00A870;
+  --color-warning: #ED7B2F;
+  --color-danger: #E34D59;
+  --color-bg: #F5F5F5;
+  --color-card: #FFFFFF;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-text-placeholder: #999999;
+  --color-border: #E7E7E7;
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+  --shadow-card: 0 4rpx 16rpx rgba(0,0,0,0.06);
+  font-size: 28rpx;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 通用容器 */
+.container {
+  padding: 24rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 隐藏开发者工具 PC 预览中 scroll-view 的系统滚动条（真机忽略，无影响） */
+.dish-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 卡片 */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24rpx;
+}
+
+/* 标题 */
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+  color: var(--color-text);
+}
+
+/* 文本辅助 */
+.text-secondary { color: var(--color-text-secondary); }
+.text-placeholder { color: var(--color-text-placeholder); }
+.text-danger { color: var(--color-danger); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-primary { color: var(--color-primary); }
+
+.font-xs { font-size: 20rpx; }
+.font-sm { font-size: 24rpx; }
+.font-base { font-size: 28rpx; }
+.font-lg { font-size: 32rpx; }
+.font-xl { font-size: 36rpx; }
+
+/* Flex */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+
+/* 间距 */
+.mt-8 { margin-top: 8rpx; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mb-8 { margin-bottom: 8rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.p-16 { padding: 16rpx; }
+.p-24 { padding: 24rpx; }
+
+/* 毛利率色标 —— 四档（2026-10-13 按方案 M7「低于70 / 70-80 / 80-85 / 85以上」口径）
+   旧三档类 tag-rate-high / -mid 保留在下方不删，避免任何残留引用失效。 */
+.tag-rate-good {
+  background: #E8F8F0;
+  color: #00A870;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+.tag-rate-ok {
+  background: #EAF3FF;
+  color: #2B7FD4;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+.tag-rate-warn {
+  background: #FFF3E0;
+  color: #ED7B2F;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+/* ↓↓↓ 旧三档色标（保留兼容，勿删） ↓↓↓ */
+.tag-rate-high {
+  background: #E8F8F0;
+  color: #00A870;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+.tag-rate-mid {
+  background: #FFF3E0;
+  color: #ED7B2F;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+.tag-rate-low {
+  background: #FFE8E8;
+  color: #E34D59;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+/* 底部安全区 */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ══ 原生按钮 nb（2026-09-29 立，全局）═════════════════════════
+   背景：本工程 tdesign 组件存在「渲染 / 点击事件不触发」问题 ——
+         t-input 完全不渲染、t-button 点击无响应（均已实测）。
+   对策：所有关键操作按钮改用原生 view + bindtap，不依赖任何组件。
+   附带好处：hover-class 提供按下变暗反馈 —— 用户一看按钮有没有变暗，
+         就能判断「点击到底有没有被接收」，把排查成本降到 0。
+   用法：<view class="nb" hover-class="nb-hover" bindtap="xxx">文字</view> */
+.nb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 72rpx;
+  padding: 0 36rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 1;
+  background: var(--color-primary, #FA5151);
+  color: #fff;
+}
+.nb-outline { background: #fff; color: var(--color-primary, #FA5151); border: 2rpx solid var(--color-primary, #FA5151); }
+.nb-default { background: #F0F0F0; color: #333; }
+.nb-text { background: transparent; color: #555; padding: 0 16rpx; }
+/* 危险按钮三种组合：实心红底 / 描边红字 / 纯红字（组合选择器优先级高于 .nb-text 的透明底） */
+.nb-danger { background: var(--color-danger, #E34D59); color: #fff; }
+.nb-text.nb-danger { background: transparent; color: var(--color-danger, #E34D59); }
+.nb-outline.nb-danger { background: #fff; color: var(--color-danger, #E34D59); border-color: var(--color-danger, #E34D59); }
+.nb-block { display: flex; width: 100%; }
+.nb-sm { height: 56rpx; padding: 0 24rpx; font-size: 24rpx; }
+.nb-hover { opacity: .72; }
+
+/* ══ 同一天预定同色（2026-09-30）══════════════════════════════
+   卡片左侧色条 + 日期着色，颜色由 js 按「日期去重升序」的序号分配，
+   色值经 item.colorHex / item.colorBg 下发（见 pages/booking/booking.js）。 */
+.card-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10rpx;
+}
+
+/* ══ 自绘原生弹层 + 原生输入（2026-10-01 提升为全局）══════════════
+   背景：tdesign 组件在本工程不可靠 —— t-popup 打不开、t-input 不渲染、
+        t-icon 因「wxss 不支持网络字体」永远加载失败。
+        故一律改用原生实现。本段为三处共用基础样式（material / dishDetail / setmealEdit），
+        booking / orderCalc 内原有同名定义保持不动（同值，互不影响）。
+   用法：
+     <view wx:if="{{show}}" class="dlg-mask" bindtap="onClose">
+       <view class="dlg-panel" catchtap="onNoop"> ...面板内容... </view>
+     </view>
+   ⚠️ 面板必须「确定高度 + overflow:hidden」，内部滚动区用 flex:1 + min-height:0；
+      否则 scroll-view 不滚动，内容顶破面板、底部按钮被推出屏幕外。 */
+.dlg-mask { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 300; display: flex; align-items: flex-end; }
+.dlg-panel { width: 100%; height: 88vh; display: flex; flex-direction: column; background: #fff; border-radius: 24rpx 24rpx 0 0; overflow: hidden; }
+
+/* 原生输入框：外观与 .picker-box 完全一致（白底 / 细边 / 圆角 / 轻阴影）。
+   原生 input 靠 line-height 垂直居中，两者等高才不会一高一矮。 */
+.inp-native {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 76rpx;
+  line-height: 76rpx;
+  padding: 0 24rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,.10);
+}
+.inp-ph { color: #BBBBBB; font-size: 28rpx; }
+
+/* picker 触发区（原生 <picker> 内的展示块，与 .inp-native 等高） */
+.picker-box {
+  box-sizing: border-box;
+  height: 76rpx;
+  line-height: 76rpx;
+  padding: 0 24rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,.10);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,498 @@
+<!-- 订货计算器核心页 - 菜品数量输入 + 采购汇总 + 订单保存 -->
+<view class="page">
+  <!-- 套餐类型标签切换（原生分段控件：tdesign t-tabs 在本工程不渲染，2026-10-01 换） -->
+  <view class="seg-bar">
+    <view
+      wx:for="{{tabList}}"
+      wx:key="*this"
+      class="seg-item {{activeTab === item ? 'active' : ''}}"
+      data-tab="{{item}}"
+      bindtap="onTabChange"
+    >{{item}}</view>
+  </view>
+
+  <!-- 散点销量录入入口 -->
+  <view class="spot-entry" bindtap="onGoSpotSale">
+    <text class="spot-entry-text">📝 补录散点销量（单品 / 单人套餐）</text>
+    <text class="spot-entry-note">录入后这里自动显示参考值 ›</text>
+  </view>
+
+  <!-- 套餐快捷输入区（可折叠） -->
+  <view class="meal-section" wx:if="{{setMealsTeam.length + setMealsSingle.length > 0}}">
+    <view class="section-header" bindtap="onToggleMealSection">
+      <text class="section-title">📦 套餐快捷订货（填份数自动展开菜品）</text>
+      <view class="section-toggle">
+        <text class="toggle-text">{{mealSectionCollapsed ? '展开' : '收起'}}</text>
+        <text class="toggle-arrow">{{mealSectionCollapsed ? '▼' : '▲'}}</text>
+      </view>
+    </view>
+    <view class="meal-cards" wx:if="{{!mealSectionCollapsed}}">
+      <!-- 单栏布局:仅单人套餐快捷卡片(2026-09-16 取消团队列,团队走预定) -->
+      <view class="meal-rows">
+        <view class="meal-row" wx:for="{{mealRows}}" wx:for-item="row" wx:for-index="rowIdx" wx:key="rowIdx">
+          <view class="meal-cell">
+            <view wx:if="{{row.single}}" class="meal-card meal-card-single">
+              <view class="meal-tag tag-single">🧍 单人</view>
+              <view class="meal-info">
+                <text class="meal-name">{{row.single.name}}</text>
+                <text class="meal-desc">{{row.single.desc}}</text>
+                <text class="meal-price">¥{{row.single.price}}</text>
+                <view class="ref-row" wx:if="{{salesRef[row.single._id]}}">
+                  <text class="ref-tag">参考</text>
+                  <text class="ref-btn" data-id="{{row.single._id}}" data-type="meal" data-qty="{{salesRef[row.single._id].avg7}}" bindtap="onFillRef">近7天 {{salesRef[row.single._id].avg7}}</text>
+                  <text class="ref-btn" data-id="{{row.single._id}}" data-type="meal" data-qty="{{salesRef[row.single._id].sameWeekday}}" bindtap="onFillRef">上周同期 {{salesRef[row.single._id].sameWeekday}}</text>
+                </view>
+              </view>
+              <view class="meal-count">
+                <NumberInput
+                  value="{{mealMap[row.single._id] || 0}}"
+                  min="{{0}}"
+                  max="{{9999}}"
+                  placeholder="份数"
+                  bind:change="onMealCountChange"
+                  data-id="{{row.single._id}}"
+                />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 菜品列表区域（可滚动）：单品紧挨套餐快捷订货，直接排在其下方 -->
+  <scroll-view class="dish-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{_saScrollTop}}" bindscroll="onScroll" bindscrolltolower="onDishReachBottom" lower-threshold="{{200}}">
+    <view class="dish-section-title">
+      <text>🍽️ 单品 / SOP 选量（按菜单分类：经典主食 › 西式主食 › 现煮面食 › 缤纷小食）</text>
+    </view>
+    <!-- 紧凑订货表（2026-09-22 用户定稿）：分类列合并 | 品名 | 订货（份），红字菜整行标红 -->
+    <!-- 预估量预警（2026-09-26 A1）：订了但低于近7天日均的项 -->
+    <view class="est-warn" wx:if="{{lowEstCount > 0}}">
+      <view class="est-warn-head" bindtap="onToggleEstWarn">
+        <text class="est-warn-title">⚠️ {{lowEstCount}} 项低于预估量（近7天日均）</text>
+        <text class="est-warn-more">{{estWarnCollapsed ? '展开 ▼' : '收起 ▲'}}</text>
+      </view>
+      <view class="est-warn-list" wx:if="{{!estWarnCollapsed}}">
+        <text class="est-warn-item" wx:for="{{lowEstList}}" wx:key="id">{{item.name}}：预估 {{item.est}} / 已填 {{item.actual}}</text>
+      </view>
+    </view>
+
+    <view class="od-table">
+      <view class="od-head">
+        <text class="od-head-cat">分类</text>
+        <text class="od-head-name">品名</text>
+        <text class="od-head-qty">订货（份）</text>
+      </view>
+      <view class="od-group" wx:for="{{catGroups}}" wx:for-item="grp" wx:for-index="gidx" wx:key="cat">
+        <view class="od-cat">{{grp.cat}}</view>
+        <view class="od-rows">
+          <view class="od-row {{d.printMark ? 'mark' : ''}} {{orderMap[d._id] > 0 ? 'ordered' : ''}} {{lowEstMap[d._id] ? 'low-est' : ''}}"
+                wx:for="{{grp.dishes}}" wx:for-item="d" wx:for-index="didx" wx:key="_id">
+            <view class="od-name-cell">
+              <text class="od-name {{d.printMark ? 'mark-red' : ''}}">{{d.dishName}}</text>
+              <text class="od-ordered" wx:if="{{orderMap[d._id] > 0}}">已订 {{orderMap[d._id]}}</text>
+              <text class="od-est {{lowEstMap[d._id] ? 'warn' : ''}}" wx:if="{{estMap[d._id]}}">{{lowEstMap[d._id] ? '⚠️' : ''}}预估{{estMap[d._id]}}</text>
+            </view>
+            <view class="od-qty">
+              <NumberInput
+                value="{{orderMap[d._id] || 0}}"
+                min="{{0}}"
+                max="{{9999}}"
+                placeholder="份"
+                bind:change="onDishCountChange"
+                data-id="{{d._id}}"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无菜品数据 -->
+    <view class="empty-state" wx:if="{{displayList.length === 0}}">
+      <text class="empty-icon">🍽️</text>
+      <text class="empty-text">暂无菜品，请先在菜品菜单中添加</text>
+    </view>
+
+    <!-- 分页加载提示：滚到底自动加载下一批，避免一次性渲染几十个组件拖慢滚动 -->
+    <view class="dish-more" wx:if="{{displayList.length > 0 && visibleList.length < displayList.length}}">
+      <text class="dish-more-text">继续下滑加载更多（已显示 {{visibleList.length}} / {{displayList.length}}）</text>
+    </view>
+  </scroll-view>
+
+  <!-- SOP 标准件快速调用区（可折叠，复用 orderMap；沉到单品列表下方） -->
+  <view class="sop-section" wx:if="{{sopDishes.length > 0}}">
+    <view class="section-header" bindtap="onToggleSopSection">
+      <text class="section-title">🔧 SOP 标准件快速调用（酸奶/青菜/米饭…一键加量）</text>
+      <view class="section-toggle">
+        <text class="toggle-text">{{sopSectionCollapsed ? '展开' : '收起'}}</text>
+        <text class="toggle-arrow">{{sopSectionCollapsed ? '▼' : '▲'}}</text>
+      </view>
+    </view>
+    <view class="sop-cards" wx:if="{{!sopSectionCollapsed}}">
+      <view class="sop-card" wx:for="{{sopDishes}}" wx:key="_id">
+        <view class="sop-info">
+          <text class="sop-name">{{item.dishName}}</text>
+          <text class="sop-price">{{item.sellPrice > 0 ? '¥' + item.sellPrice : '标准件'}}</text>
+        </view>
+        <view class="sop-count">
+          <NumberInput
+            value="{{orderMap[item._id] || 0}}"
+            min="{{0}}"
+            max="{{9999}}"
+            placeholder="份数"
+            bind:change="onDishCountChange"
+            data-id="{{item._id}}"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存订货区：用户提供的盘点表，直接显示库存并自动减库存 -->
+  <view class="inventory-section">
+    <view class="section-header" bindtap="onToggleInventorySection">
+      <text class="section-title">📦 库存订货（{{inventoryList.length}} 项 · 需采购 {{inventoryTotalNeed}} 项）</text>
+      <view class="section-toggle">
+        <text class="toggle-text">{{inventorySectionCollapsed ? '展开' : '收起'}}</text>
+        <text class="toggle-arrow">{{inventorySectionCollapsed ? '▼' : '▲'}}</text>
+      </view>
+    </view>
+    <view class="inventory-table" wx:if="{{!inventorySectionCollapsed}}">
+      <!-- 库存没读到实时数据时的醒目提示（默认隐藏，只在退回出厂基线时出现） -->
+      <view class="inv-warn" wx:if="{{inventorySource === 'seed'}}">
+        ⚠️ 没读到实时库存（云端和本机都是空的）—— 下面显示的是出厂基线数，不是实际盘点数。采购单会按它扣减，请先点数字改成实际库存，或从 Excel 复制「品名+数量」批量粘贴覆盖。
+      </view>
+      <view class="inv-hint-row">
+        <text class="inv-hint">库存列可直接点击修改；或从 Excel 复制品名+数量整段粘贴</text>
+        <view class="nb nb-sm nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onOpenImport">📋 批量粘贴导入</view>
+      </view>
+      <view class="inventory-header">
+        <text class="inv-col-name">品名</text>
+        <text class="inv-col-stock">库存</text>
+        <text class="inv-col-order">订货</text>
+        <text class="inv-col-need">需采购</text>
+      </view>
+      <!-- 库存明细：限高内部滚动（表头常驻在上方），避免 34 行把整页撑长 -->
+      <scroll-view class="inv-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="inventory-row {{inventoryNeedMap[item.name] > 0 ? 'need' : ''}}" wx:for="{{inventoryList}}" wx:key="name">
+          <text class="inv-col-name">{{item.name}}</text>
+          <view class="inv-col-stock">
+            <NumberInput
+              value="{{item.stock || 0}}"
+              min="{{0}}"
+              max="{{99999}}"
+              placeholder="数量"
+              bind:change="onInventoryStockChange"
+              data-name="{{item.name}}"
+            />
+          </view>
+          <view class="inv-col-order">
+            <NumberInput
+              value="{{inventoryOrderMap[item.name] || 0}}"
+              min="{{0}}"
+              max="{{9999}}"
+              placeholder="数量"
+              bind:change="onInventoryOrderChange"
+              data-name="{{item.name}}"
+            />
+          </view>
+          <text class="inv-col-need {{inventoryNeedMap[item.name] > 0 ? 'highlight' : ''}}">{{inventoryNeedMap[item.name] || 0}}</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 底部固定汇总栏 -->
+  <view class="bottom-bar">
+    <view class="summary-row">
+      <view class="summary-stat">
+        <text class="stat-label">菜品总数</text>
+        <text class="stat-value">{{totalDishCount}} 份</text>
+      </view>
+      <view class="summary-stat">
+        <text class="stat-label">预估营收</text>
+        <text class="stat-value price">¥{{estimatedRevenue}}</text>
+      </view>
+    </view>
+
+    <!-- 损耗率调节 -->
+    <view class="loss-row">
+      <text class="loss-label">损耗率</text>
+      <view class="loss-stepper">
+        <text class="loss-btn" hover-class="loss-btn-hover" hover-stay-time="80" bindtap="onLossDecrease">−</text>
+        <text class="loss-value">{{lossRate}}</text>
+        <text class="loss-btn" hover-class="loss-btn-hover" hover-stay-time="80" bindtap="onLossIncrease">＋</text>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-row">
+      <view class="nb" hover-class="nb-hover" hover-stay-time="80" bindtap="onShowSummary">查看采购汇总</view>
+      <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onSaveOrder" wx:if="{{canSave}}">保存订单</view>
+    </view>
+
+    <!-- 安全区域适配 -->
+    <view class="safe-area" />
+  </view>
+
+  <!-- 采购汇总弹出层：自绘原生弹层（2026-09-30）
+       t-popup 在本工程不可靠（同 t-input / t-icon / t-button）→ 换原生 mask + 底部面板。
+       关闭途径：点遮罩 / 点「关闭」。 -->
+  <view wx:if="{{showSummaryPopup}}" class="dlg-mask" bindtap="onCloseSummary">
+    <view class="dlg-panel" catchtap="onNoop">
+    <view class="popup-content">
+      <view class="popup-title">{{includeBookings ? '📋 采购汇总（含预定）' : '📋 采购汇总'}}</view>
+      <view class="popup-subtitle">损耗率：{{lossRate}}<text wx:if="{{includeBookings}}">　·　已并入今天预定备货</text></view>
+
+      <!-- 并入预定备货开关：散点订货 + 预定备货合并成一张单，数量加总 -->
+      <view class="booking-toggle" hover-class="booking-toggle-hover" catchtap="onToggleIncludeBookings">
+        <text class="booking-toggle-label">并入预定备货（散点 + 预定合一张）</text>
+        <text class="booking-toggle-tip" wx:if="{{includeBookings}}">{{bookingDate === '全部' ? '全部日期' : bookingDate}} · {{bookingCount}} 单<text wx:if="{{bookingCount === 0}}"> ⚠️该日无预定</text></text>
+        <view class="switch {{includeBookings ? 'on' : ''}}">
+          <view class="switch-knob" />
+        </view>
+      </view>
+      <!-- 开关打开时可选「并入哪天的预定」：今天 / 下次备货 / 各预定日期 / 全部 -->
+      <view class="booking-date-row" wx:if="{{includeBookings && bookingDateOptions.length > 0}}">
+        <text class="booking-date-label">预定日期</text>
+        <picker mode="selector" range="{{bookingDateOptions}}" value="{{bookingDateIndex}}" bindchange="onBookingDateChange">
+          <view class="picker-box booking-date-picker">{{bookingDateOptions[bookingDateIndex]}}</view>
+        </picker>
+      </view>
+      <view class="booking-date-hint" wx:if="{{includeBookings && bookingCount === 0}}">
+        该日期没有预订单，点上面切换日期（如选「今天」或「全部」）
+      </view>
+
+      <!-- 无采购需求空状态 -->
+      <view class="popup-empty" wx:if="{{summaryData.length === 0}}">
+        <text class="popup-empty-icon">📦</text>
+        <text class="popup-empty-text">当前无采购需求，请先在套餐 / 菜品处录入份数</text>
+      </view>
+
+      <!-- 按供应商分组展示 -->
+      <scroll-view class="popup-scroll" scroll-y wx:if="{{summaryData.length > 0}}">
+        <view class="supplier-group" wx:for="{{summaryData}}" wx:key="supplier" wx:if="{{item.materials.length > 0}}">
+          <view class="supplier-header">
+            <text>{{item.supplier}}</text>
+            <text class="supplier-export-btn" catchtap="onExportSupplier" data-index="{{index}}">📤 导出采购单</text>
+          </view>
+          <view class="material-row material-header-row">
+            <text class="col-name">原料</text>
+            <text class="col-num">用量</text>
+            <text class="col-buy">建议采购</text>
+            <text class="col-cost">预估金额</text>
+          </view>
+          <view wx:for="{{item.materials}}" wx:for-item="m" wx:for-index="midx" wx:key="name">
+            <!-- 品类分隔标题（蔬菜 / 肉类 / 干货 / 奶制品和鸡蛋 / 主食及其他 / 调料） -->
+            <view class="cat-head" wx:if="{{m.catFirst}}">{{m.catName}}</view>
+            <view class="material-row" bindtap="onToggleMaterialSource" data-si="{{index}}" data-mi="{{midx}}">
+              <text class="col-name">{{m.name}}<text class="src-mark" wx:if="{{m.sources.length}}"> ⓘ</text></text>
+              <text class="col-num">{{m.totalUseNum}}{{m.unit}}</text>
+              <text class="col-buy highlight">{{m.suggestBuy}}{{m.buyUnit}}</text>
+              <text class="col-cost">¥{{m.suggestCost}}</text>
+            </view>
+            <!-- 溯源明细：点原料行展开「哪个菜 / 单份用量 / 预定·散点各多少份 / 小计」 -->
+            <view wx:if="{{m._open && m.sources.length}}" class="src-box">
+              <view wx:for="{{m.sources}}" wx:for-item="s" wx:for-index="sidx" wx:key="sidx" class="src-item">
+                <view class="src-head">
+                  <text class="src-dish">{{s.dishName}}</text>
+                  <text class="src-unit">单份 {{s.useNum}}{{s.unit}}</text>
+                </view>
+                <view wx:for="{{s.parts}}" wx:for-item="p" wx:for-index="pidx" wx:key="pidx" class="src-row">
+                  <text class="src-from {{p.from === '预定' ? 'from-booking' : 'from-spot'}}">{{p.from || '合计'}}</text>
+                  <text class="src-calc">{{p.count}} 份 × {{s.useNum}}{{s.unit}}</text>
+                  <text class="src-amt">{{p.amount}}{{s.unit}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 汇总总计 -->
+      <view class="popup-total" wx:if="{{summaryData.length > 0}}">
+        <text class="total-label">采购预估总金额</text>
+        <text class="total-value">¥{{totalMoney}}</text>
+      </view>
+
+      <view class="popup-actions">
+        <view class="nb" hover-class="nb-hover" hover-stay-time="80" bindtap="onSummaryCopy" wx:if="{{summaryData.length > 0}}">📋 一键复制全部</view>
+        <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onExportAll" wx:if="{{summaryData.length > 0}}">📤 导出全部采购单</view>
+        <view class="nb nb-text" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseSummary">关闭</view>
+      </view>
+    </view>
+    </view>
+  </view>
+
+  <!-- Toast：全项目统一用原生 wx.showToast，此处标记已移除（tdesign t-toast 从未被调用） -->
+
+  <!-- 采购单预览弹窗：导出后展示只读表格 -->
+  <view wx:if="{{previewVisible}}" class="dlg-mask" bindtap="onPreviewClose">
+    <view class="dlg-panel" catchtap="onNoop">
+    <view class="popup-content">
+      <view class="popup-title">📋 {{previewTitle}}</view>
+      <view class="popup-subtitle">文件名：{{previewFileName}}</view>
+      <view class="popup-saved-hint" wx:if="{{previewSavedHint}}">{{previewSavedHint}}</view>
+      <view class="popup-warn" wx:if="{{previewWarn}}">{{previewWarn}}</view>
+
+      <scroll-view class="popup-scroll" scroll-y wx:if="{{previewGroups.length > 0 || previewMenuSummary.length > 0 || previewSpotSummary.length > 0}}">
+        <!-- 散点菜单汇总：订货计算器直接填份数的菜（含套餐快捷区展开），排最前 -->
+        <view class="menu-summary spot-summary" wx:if="{{previewSpotSummary.length > 0}}">
+          <view class="menu-summary-title">🍽️ 散点菜单汇总（{{previewSpotSummary.length}} 道菜）</view>
+          <view class="menu-item" wx:for="{{previewSpotSummary}}" wx:for-item="sd" wx:key="index">
+            <view class="menu-item-head">
+              <text class="menu-seq">{{index + 1}}</text>
+              <text class="menu-setmeal">{{sd.dishName}}</text>
+              <text class="menu-qty">{{sd.qty}} 份</text>
+            </view>
+          </view>
+        </view>
+        <!-- 预定菜单汇总：放在滚动区内（多单时不占死空间），先看每单出了什么菜再核对原料数字 -->
+        <view class="menu-summary" wx:if="{{previewMenuSummary.length > 0}}">
+          <view class="menu-summary-title">🍽️ 预定菜单汇总（{{previewMenuSummary.length}} 单）</view>
+          <view class="menu-item" wx:for="{{previewMenuSummary}}" wx:for-item="bm" wx:key="index">
+            <view class="menu-item-head">
+              <text class="menu-seq">{{index + 1}}</text>
+              <text class="menu-setmeal">{{bm.setmealName}}</text>
+              <text class="menu-qty">订 {{bm.orderQty}}<text wx:if="{{bm.giftQty > 0}}" class="menu-gift"> / 赠 {{bm.giftQty}}</text></text>
+            </view>
+            <view class="menu-meta" wx:if="{{bm.customer || bm.date}}">{{bm.date}}<text wx:if="{{bm.customer}}">　{{bm.customer}}</text></view>
+            <!-- 🆕 2026-10-11：该单在预定里填的备注（与菜单汇总表的「备注」列同源） -->
+            <view class="menu-remark" wx:if="{{bm.remarkText}}">备注：{{bm.remarkText}}</view>
+            <view class="menu-line">菜单：{{bm.menuText}}</view>
+            <view class="menu-swap" wx:for="{{bm.swaps}}" wx:for-item="sw" wx:for-index="sidx" wx:key="sidx">🔄 {{sw.from}} → {{sw.to}}{{sw.qty ? ' ×' + sw.qty : '（全换）'}}</view>
+            <view class="menu-extra" wx:for="{{bm.extras}}" wx:for-item="ex" wx:for-index="eidx" wx:key="eidx">➕ 加 {{ex.dishName}} ×{{ex.qty}}</view>
+          </view>
+        </view>
+        <view class="supplier-group" wx:for="{{previewGroups}}" wx:key="supplier">
+          <view class="supplier-header">
+            <text>{{item.supplier}}</text>
+            <text class="supplier-row-count">{{item.materials.length}} 种原料</text>
+          </view>
+          <view class="material-row material-header-row">
+            <text class="col-name">原料</text>
+            <text class="col-num">用量</text>
+            <text class="col-buy">建议采购</text>
+            <text class="col-cost">预估金额</text>
+          </view>
+          <view wx:for="{{item.materials}}" wx:for-item="m" wx:for-index="midx" wx:key="name">
+            <!-- 品类分隔标题（蔬菜 / 肉类 / 干货 / 奶制品和鸡蛋 / 主食及其他 / 调料） -->
+            <view class="cat-head" wx:if="{{m.catFirst}}">{{m.catName}}</view>
+            <view class="material-row" bindtap="onTogglePreviewMaterialSource" data-si="{{index}}" data-mi="{{midx}}">
+              <text class="col-name">{{m.name}}<text class="src-mark" wx:if="{{m.sources.length}}"> ⓘ</text></text>
+              <text class="col-num">{{m.totalUseNum}}{{m.unit}}</text>
+              <text class="col-buy highlight">{{m.suggestBuy}}{{m.buyUnit}}</text>
+              <text class="col-cost">¥{{m.suggestCost}}</text>
+            </view>
+            <!-- 溯源明细：点原料行展开「哪个菜 / 单份用量 / 预定·赠送各多少份 / 小计」 -->
+            <view wx:if="{{m._open && m.sources.length}}" class="src-box">
+              <view wx:for="{{m.sources}}" wx:for-item="s" wx:for-index="sidx" wx:key="sidx" class="src-item">
+                <view class="src-head">
+                  <text class="src-dish">{{s.dishName}}</text>
+                  <text class="src-unit">单份 {{s.useNum}}{{s.unit}}</text>
+                </view>
+                <view wx:for="{{s.parts}}" wx:for-item="p" wx:for-index="pidx" wx:key="pidx" class="src-row">
+                  <text class="src-from {{p.from === '预定' ? 'from-booking' : (p.from === '赠送' ? 'from-gift' : 'from-spot')}}">{{p.from || '合计'}}</text>
+                  <text class="src-calc">{{p.count}} 份 × {{s.useNum}}{{s.unit}}</text>
+                  <text class="src-amt">{{p.amount}}{{s.unit}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="popup-total" wx:if="{{previewTotalMoney > 0}}">
+        <text class="total-label">采购预估总金额</text>
+        <text class="total-value">¥{{previewTotalMoney}}</text>
+      </view>
+
+      <view class="popup-actions preview-actions">
+        <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onPreviewCopy">📋 复制全文</view>
+        <view class="nb nb-block nb-default" hover-class="nb-hover" hover-stay-time="80" bindtap="onPreviewShare">📤 分享给供应商</view>
+        <view class="nb nb-block nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onPreviewClose">关闭</view>
+      </view>
+    </view>
+    </view>
+  </view>
+
+  <!-- 批量粘贴导入库存（2026-10-02）：从 Excel 复制「品名 + 数量」两列整段粘贴，一次更新 -->
+  <view wx:if="{{showImportDialog}}" class="dlg-mask dlg-center" bindtap="onCloseImport">
+    <view class="import-panel" catchtap="onNoop">
+      <text class="import-title">📋 批量导入库存</text>
+      <text class="import-tip">① 在表格里选中「品名 + 数量」两列复制 → ② 点下方「一键读取剪贴板」；也可直接在框内长按粘贴。每行一项，支持「品名⇥数量」「品名,数量」「品名 数量」。</text>
+
+      <view class="import-read-row">
+        <view class="nb nb-sm import-read-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="onReadClipboard">📥 一键读取剪贴板</view>
+        <text class="import-clear" hover-class="import-clear-hover" bindtap="onClearImport">清空重填</text>
+      </view>
+
+      <textarea class="import-textarea"
+        value="{{importRaw}}"
+        placeholder="在此粘贴，例如：半成品冷冻意大利面 7"
+        placeholder-class="import-ph"
+        maxlength="8000"
+        auto-height="{{false}}"
+        show-confirm-bar="{{false}}"
+        bindinput="onImportInput"
+        bindblur="onImportBlur" />
+
+      <!-- 解析预览 -->
+      <scroll-view class="import-preview" scroll-y wx:if="{{importPreview}}">
+        <view class="import-stat">
+          <text class="istat ok">✅ 匹配 {{importPreview.matchedCount}} 项</text>
+          <text class="istat chg" wx:if="{{importPreview.changedCount > 0}}">🟡 变更 {{importPreview.changedCount}} 项</text>
+          <text class="istat alias" wx:if="{{importPreview.aliasCount > 0}}">🔄 别名识别 {{importPreview.aliasCount}} 项</text>
+          <text class="istat warn" wx:if="{{importPreview.unmatched.length > 0}}">❓ 未识别 {{importPreview.unmatched.length}} 项</text>
+          <text class="istat skip" wx:if="{{importPreview.skipped.length > 0}}">⏭ 忽略 {{importPreview.skipped.length}} 项</text>
+        </view>
+
+        <view class="import-group" wx:if="{{importPreview.matched.length > 0}}">
+          <text class="import-group-title">匹配成功（蓝字为变更）</text>
+          <view class="import-row" wx:for="{{importPreview.matched}}" wx:key="name">
+            <view class="imp-name-wrap">
+              <text class="imp-name">{{item.name}}</text>
+              <text class="imp-tag alias" wx:if="{{item.viaAlias}}">别名 ← {{item.input}}</text>
+              <text class="imp-tag" wx:elif="{{item.input !== item.name}}">匹配自 {{item.input}}</text>
+            </view>
+            <text class="imp-val {{item.changed ? 'changed' : ''}}">{{item.oldStock}} → {{item.newStock}}</text>
+          </view>
+        </view>
+
+        <view class="import-group" wx:if="{{importPreview.unmatched.length > 0}}">
+          <text class="import-group-title warn">未识别（库存表里没有这些名字，不会导入）</text>
+          <view class="import-row" wx:for="{{importPreview.unmatched}}" wx:key="name">
+            <text class="imp-name warn">{{item.name}}</text>
+            <text class="imp-val">{{item.qty}}</text>
+          </view>
+          <view class="import-add-toggle" hover-class="import-add-toggle-hover" catchtap="onToggleAddUnmatched">
+            <view class="cbx {{importAddUnmatched ? 'on' : ''}}">{{importAddUnmatched ? '✓' : ''}}</view>
+            <text class="import-add-label">把未识别项也新增为库存项（默认不勾，防错别字）</text>
+          </view>
+        </view>
+
+        <view class="import-group" wx:if="{{importPreview.skipped.length > 0}}">
+          <text class="import-group-title">忽略（原样保留，未改动）</text>
+          <view class="import-row" wx:for="{{importPreview.skipped}}" wx:key="line">
+            <text class="imp-name">{{item.name}}</text>
+            <text class="imp-val">{{item.reason}}</text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="import-empty" wx:else>
+        <text class="import-empty-text">粘贴后这里会显示「匹配 / 变更 / 未识别」预览，确认无误再导入</text>
+      </view>
+
+      <view class="import-actions">
+        <view class="nb nb-block nb-default" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseImport">取消</view>
+        <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onConfirmImport">确认导入</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 科奇头像滚动定位锚点（老花友好：放大圆形头像，显示滚动进度，点按回顶部） -->
+  <!-- 弹窗打开时隐藏锚点：z-index:999 高于弹层(300)，不隐藏会压在弹窗按钮上 -->
+<scroll-anchor show="{{showScrollAnchor && !showSummaryPopup && !previewVisible && !showImportDialog}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" bind:scrub="onScrollAnchorScrub" />
+</view>

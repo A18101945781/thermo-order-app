@@ -1,0 +1,11 @@
+{
+  "collection": "user",
+  "description": "用户权限表",
+  "fields": {
+    "_id": { "type": "string", "description": "记录ID" },
+    "openid": { "type": "string", "description": "微信openid", "required": true },
+    "nickname": { "type": "string", "description": "昵称" },
+    "role": { "type": "string", "description": "角色(boss/purchase/kitchen)", "required": true },
+    "createTime": { "type": "number", "description": "创建时间戳" }
+  }
+}

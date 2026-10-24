@@ -1,0 +1,121 @@
+.page {
+  padding: 24rpx 24rpx 60rpx;
+  background: #F5F5F5;
+  min-height: 100vh;
+}
+
+/* 日期条 */
+.date-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 16rpx;
+}
+.date-pick { display: flex; align-items: center; }
+.date-text { font-size: 34rpx; font-weight: 700; color: #1a1a1a; }
+.date-week { font-size: 26rpx; color: #888; margin-left: 16rpx; }
+.date-arrow { font-size: 20rpx; color: #bbb; margin-left: 12rpx; }
+.date-today {
+  font-size: 26rpx;
+  color: #FA5151;
+  border: 1rpx solid #FA5151;
+  border-radius: 24rpx;
+  padding: 6rpx 20rpx;
+}
+
+.tip {
+  background: #FFF8E6;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 24rpx;
+  color: #8a6d1f;
+  line-height: 1.6;
+  margin-bottom: 24rpx;
+}
+.tip-em { color: #FA5151; font-weight: 700; }
+
+.sec-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #333;
+  margin: 24rpx 0 12rpx 8rpx;
+}
+.hist-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 8rpx;
+}
+.toggle { font-size: 24rpx; color: #FA5151; font-weight: 400; }
+
+/* 录入行 */
+.list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.row:last-child { border-bottom: none; }
+.row-info { flex: 1; min-width: 0; padding-right: 16rpx; }
+.row-name {
+  font-size: 28rpx;
+  color: #1a1a1a;
+  display: block;
+}
+.row-desc {
+  font-size: 22rpx;
+  color: #999;
+  display: block;
+  margin-top: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row-price {
+  font-size: 24rpx;
+  color: #FA5151;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.empty {
+  padding: 40rpx 0;
+  text-align: center;
+  font-size: 26rpx;
+  color: #bbb;
+}
+
+/* 操作 */
+.actions { margin-top: 32rpx; }
+.act-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+/* 历史 */
+.hist {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.hist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.hist-row:last-child { border-bottom: none; }
+.hist-date { font-size: 26rpx; color: #333; }
+.hist-num { font-size: 24rpx; color: #888; }

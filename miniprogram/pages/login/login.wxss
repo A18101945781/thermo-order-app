@@ -1,0 +1,192 @@
+/* 微信授权登录页样式 - 纯本地模式 */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #FA5151 0%, #FF6B6B 50%, #FFFFFF 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 48rpx;
+}
+
+/* 安全区 */
+.safe-top {
+  height: env(safe-area-inset-top, 88rpx);
+  height: 160rpx;
+}
+
+.safe-bottom {
+  height: env(safe-area-inset-bottom, 40rpx);
+}
+
+/* Logo 区域 */
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0 40rpx;
+}
+
+.logo-icon {
+  font-size: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.logo-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 12rpx;
+}
+
+.logo-subtitle {
+  font-size: var(--font-base, 28rpx);
+  color: rgba(255,255,255,0.8);
+}
+
+/* 登录区域 */
+.login-section {
+  width: 100%;
+  background: var(--card-bg, #FFFFFF);
+  border-radius: var(--radius, 16rpx);
+  box-shadow: 0 8rpx 40rpx rgba(0,0,0,0.1);
+  padding: 48rpx 32rpx;
+  margin-bottom: 32rpx;
+}
+
+/* 登录按钮 - 原生 view */
+.login-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, #FA5151, #FF6B6B);
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(250, 81, 81, 0.3);
+}
+
+.login-btn-text {
+  font-size: var(--font-xl, 36rpx);
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+/* 已授权提示 */
+.authorized-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 16rpx;
+  background: #E8F5E9;
+  border-radius: 12rpx;
+  margin-bottom: 32rpx;
+}
+
+.auth-icon {
+  font-size: var(--font-lg, 32rpx);
+  color: #4CAF50;
+}
+
+.auth-text {
+  font-size: var(--font-base, 28rpx);
+  color: #4CAF50;
+}
+
+/* 角色卡片列表 */
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
+}
+
+.role-card {
+  border: 3rpx solid #E0E0E0;
+  border-radius: var(--radius, 16rpx);
+  padding: 28rpx 24rpx;
+  transition: all 0.3s;
+}
+
+.role-card.active {
+  border-color: var(--primary-color, #FA5151);
+  background: #FFF5F5;
+}
+
+.role-icon {
+  font-size: 56rpx;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.role-name {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 700;
+  color: var(--text-primary, #333333);
+  margin-bottom: 4rpx;
+}
+
+.role-desc {
+  font-size: var(--font-sm, 24rpx);
+  color: var(--text-secondary, #999999);
+  margin-bottom: 12rpx;
+}
+
+/* 角色权限标签 */
+.role-perms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.perm-tag {
+  font-size: var(--font-xs, 20rpx);
+  background: #F5F5F5;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  color: var(--text-secondary, #999999);
+}
+
+.role-card.active .perm-tag {
+  background: #FFEBEE;
+  color: var(--primary-color, #FA5151);
+}
+
+/* 确认按钮 */
+.confirm-btn {
+  width: 100%;
+  height: 88rpx;
+  background: #E0E0E0;
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-btn.active {
+  background: linear-gradient(135deg, #FA5151, #FF6B6B);
+  box-shadow: 0 8rpx 24rpx rgba(250, 81, 81, 0.3);
+}
+
+.confirm-btn-text {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.confirm-btn:not(.active) .confirm-btn-text {
+  color: #BDBDBD;
+}
+
+/* 隐私声明 */
+.privacy-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.privacy-text {
+  font-size: var(--font-xs, 20rpx);
+  color: rgba(255,255,255,0.7);
+}

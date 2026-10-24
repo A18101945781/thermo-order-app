@@ -1,0 +1,60 @@
+<!-- MaterialTable 原料超级表格组件 -->
+<view class="material-table">
+  <!-- 固定表头 -->
+  <view class="table-header">
+    <view class="header-cell col-name">名称</view>
+    <view class="header-cell col-supplier">供应商</view>
+    <view class="header-cell col-price">单价</view>
+    <view class="header-cell col-unit">单位</view>
+    <view class="header-cell col-stock">{{quickEditMode ? '新库存' : '库存'}}</view>
+    <view class="header-cell col-status">状态</view>
+    <view wx:if="{{canEdit}}" class="header-cell col-action">操作</view>
+  </view>
+
+  <!-- 滚动数据行 -->
+  <scroll-view class="table-body" scroll-y enhanced show-scrollbar="{{false}}">
+    <view wx:if="{{displayList.length === 0}}" class="empty-row">
+      <text>暂无数据</text>
+    </view>
+    <block wx:for="{{displayList}}" wx:key="_id">
+      <view class="table-row" bindtap="onEdit" data-index="{{index}}">
+        <view class="row-cell col-name">
+          <text class="material-name">{{item.name}}</text>
+        </view>
+        <view class="row-cell col-supplier">
+          <text class="supplier-text">{{item._supplierShort}}</text>
+        </view>
+        <view class="row-cell col-price">
+          <text class="{{item._isHighCost ? 'price-high' : 'price-normal'}}">{{item._priceText}}</text>
+        </view>
+        <view class="row-cell col-unit">{{item.unit}}</view>
+        <view class="row-cell col-stock">
+          <block wx:if="{{quickEditMode}}">
+            <input
+              class="stock-input {{item._isLowStock ? 'stock-input-low' : ''}}"
+              type="digit"
+              value="{{item.curStock}}"
+              data-index="{{index}}"
+              bindinput="onStockInput"
+              confirm-type="next"
+            />
+          </block>
+          <block wx:else>
+            <text class="{{item._isLowStock ? 'stock-low' : 'stock-normal'}}">{{item.curStock}}</text>
+          </block>
+        </view>
+        <view class="row-cell col-status">
+          <text class="{{item._statusClass}}">{{item._statusText}}</text>
+        </view>
+        <view wx:if="{{canEdit}}" class="row-cell col-action" catchtap="onDelete" data-index="{{index}}">
+          <text class="action-btn delete-btn">删除</text>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- 统计 -->
+  <view class="table-footer">
+    <text>共 {{displayList.length}} 条</text>
+  </view>
+</view>

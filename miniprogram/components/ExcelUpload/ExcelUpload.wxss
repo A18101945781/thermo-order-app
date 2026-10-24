@@ -1,0 +1,262 @@
+/* ExcelUpload Excel文件上传组件样式 */
+
+/* 遮罩层 */
+.upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx 32rpx;
+}
+
+/* 弹窗主体 */
+.upload-popup {
+  width: 100%;
+  max-height: 85vh;
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 标题栏 */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  border-bottom: 2rpx solid #F0F0F0;
+}
+
+.popup-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.popup-close {
+  font-size: 36rpx;
+  color: #999999;
+  padding: 8rpx;
+}
+
+/* 内容区 */
+.popup-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24rpx 32rpx;
+}
+
+/* 上传区域 */
+.upload-area {
+  border: 2rpx dashed #DDDDDD;
+  border-radius: 16rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+  background-color: #FAFAFA;
+  transition: border-color 0.2s;
+}
+
+.upload-area:active {
+  border-color: #FA5151;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.upload-icon {
+  font-size: 64rpx;
+}
+
+.upload-hint {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.upload-type {
+  font-size: 24rpx;
+  color: #CCCCCC;
+}
+
+/* 已选文件信息 */
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.file-icon {
+  font-size: 48rpx;
+}
+
+.file-detail {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 4rpx;
+}
+
+.file-size {
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.file-remove {
+  font-size: 28rpx;
+  color: #CCCCCC;
+  padding: 8rpx;
+}
+
+/* 预览区域 */
+.preview-section {
+  margin-top: 24rpx;
+}
+
+.preview-title {
+  display: block;
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 12rpx;
+}
+
+.preview-scroll {
+  max-height: 240rpx;
+  background-color: #F5F5F5;
+  border-radius: 12rpx;
+  padding: 16rpx;
+}
+
+.preview-content {
+  font-size: 22rpx;
+  color: #999999;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+/* 导入模式选择 */
+.mode-section {
+  margin-top: 24rpx;
+}
+
+.mode-title {
+  display: block;
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 16rpx;
+}
+
+.mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.mode-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background-color: #F5F5F5;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.mode-item.mode-active {
+  background-color: rgba(250, 81, 81, 0.05);
+  border-color: #FA5151;
+}
+
+.mode-radio {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #CCCCCC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.mode-active .mode-radio {
+  border-color: #FA5151;
+}
+
+.radio-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background-color: #FA5151;
+}
+
+.mode-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mode-name {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+}
+
+.mode-desc {
+  font-size: 24rpx;
+  color: #999999;
+  margin-top: 4rpx;
+}
+
+/* 底部操作按钮 */
+.popup-footer {
+  display: flex;
+  gap: 24rpx;
+  padding: 24rpx 32rpx;
+  border-top: 2rpx solid #F0F0F0;
+  background-color: #FFFFFF;
+}
+
+.btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-cancel {
+  background-color: #F5F5F5;
+  color: #666666;
+}
+
+.btn-confirm {
+  background-color: #FA5151;
+  color: #FFFFFF;
+}
+
+.btn-disabled {
+  background-color: #DDDDDD;
+  color: #999999;
+}

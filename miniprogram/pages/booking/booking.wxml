@@ -1,0 +1,336 @@
+<view class="page">
+  <!-- 下次备货看板（2026-10-10 建；2026-10-11 起按「营业日」算：周一休息自动跳过） -->
+  <view class="tb {{bizBoard.count ? '' : 'tb-idle'}}">
+    <view class="tb-head" bindtap="onToggleBoard">
+      <view class="tb-title-row">
+        <text class="tb-title">📦 下次备货</text>
+        <text class="tb-date">{{bizBoard.label}}</text>
+      </view>
+      <view class="tb-stat-row">
+        <text wx:if="{{bizBoard.count}}" class="tb-stat">{{bizBoard.count}} 单 · 合计 {{bizBoard.portions}} 份 · ¥{{bizBoard.amountText}}</text>
+        <text wx:else class="tb-stat tb-stat-idle">该日暂无预定，无需备货</text>
+        <text class="tb-arrow">{{boardExpand ? '收起 ▲' : '明细 ▼'}}</text>
+      </view>
+    </view>
+    <view wx:if="{{bizBoard.skipText}}" class="tb-skip">⏭️ 跳过 {{bizBoard.skipText}}（本店休息）</view>
+    <view wx:if="{{bizBoard.customCount}}" class="tb-warn">⚠️ 含 {{bizBoard.customCount}} 条「自定义餐标」不参与自动备货，需手动备货</view>
+    <view wx:if="{{boardExpand}}" class="tb-body">
+      <view wx:if="{{!bizBoard.count}}" class="tb-empty">该日没有预定</view>
+      <view wx:for="{{bizBoard.items}}" wx:key="_id" class="tb-row {{item.isCustom ? 'tb-row-custom' : ''}}">
+        <text class="tb-row-time">{{item.time || '—'}}</text>
+        <view class="tb-row-main">
+          <text class="tb-row-cus">{{item.customer}}</text>
+          <text class="tb-row-meal">{{item.setmealName}}<text wx:if="{{item.remark}}" class="tb-row-remark">（{{item.remark}}）</text></text>
+        </view>
+        <text class="tb-row-qty" wx:if="{{item.needFill}}">待填</text>
+        <text class="tb-row-qty" wx:else>订{{item.orderQty}}<text wx:if="{{item.giftQty}}">送{{item.giftQty}}</text></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 按日期汇总 -->
+  <view class="summary-card">
+    <view class="summary-title">按日期汇总</view>
+    <view wx:if="{{summary.byDate.length === 0}}" class="summary-empty">暂无数据</view>
+    <view wx:for="{{summary.byDate}}" wx:key="key" class="summary-row">
+      <text class="summary-key">{{item.key}}</text>
+      <text class="summary-val">份数 {{item.portions}} · 金额 ¥{{item.amountText}}</text>
+    </view>
+  </view>
+
+  <!-- 按客源汇总 -->
+  <view class="summary-card">
+    <view class="summary-title">按客源汇总</view>
+    <view wx:if="{{summary.byCustomer.length === 0}}" class="summary-empty">暂无数据</view>
+    <view wx:for="{{summary.byCustomer}}" wx:key="key" class="summary-row">
+      <text class="summary-key">{{item.key}}</text>
+      <text class="summary-val">份数 {{item.portions}} · 金额 ¥{{item.amountText}}</text>
+    </view>
+  </view>
+
+  <!-- 预定备货：按日期生成采购单并跳订货页预览 -->
+  <view class="purchase-bar">
+    <view class="purchase-head">
+      <text class="purchase-bar-label">备货日期</text>
+      <picker mode="selector" range="{{purchaseDateOptions}}" value="{{purchaseDateIndex}}" bindchange="onPurchaseDateChange">
+        <view class="picker-box purchase-picker">{{purchaseDate}}</view>
+      </picker>
+    </view>
+    <text class="purchase-tip">默认按「下次营业日」备货：周一休息会自动跳过（周日备周二），可改选其他日期</text>
+    <view class="purchase-actions">
+      <view class="nb nb-sm" hover-class="nb-hover" hover-stay-time="80" bindtap="onGeneratePurchase">生成采购单</view>
+      <view class="nb nb-sm nb-default" hover-class="nb-hover" hover-stay-time="80" bindtap="onMigrateCloud">同步云端</view>
+    </view>
+  </view>
+
+  <!-- 批量粘贴导入入口（2026-10-03）：整段粘贴一次录入多条预定 -->
+  <view class="import-entry">
+    <view class="nb nb-sm" hover-class="nb-hover" hover-stay-time="80" bindtap="onOpenImport">📋 批量粘贴导入</view>
+    <text class="import-entry-tip">从表格/聊天整段复制，一次录入多条预定</text>
+  </view>
+
+  <!-- 列表 -->
+  <view class="list">
+    <view wx:for="{{list}}" wx:key="_id" class="card" style="background: {{item.colorBg}}; border-color: {{item.colorBorder}}">
+      <!-- 左侧色条：同一天预定同色，颜色由 js 按日期去重升序分配（item.colorHex） -->
+      <view class="card-stripe" style="background: {{item.colorHex}}"></view>
+      <view class="card-head">
+        <text class="card-date" style="color: {{item.colorHex}}">{{item.date}} {{item.time}}</text>
+        <text class="card-customer">{{item.customer}}</text>
+      </view>
+      <view class="card-body">
+        <text class="card-meal">{{item.setmealText}}</text>
+        <text wx:if="{{item.typeRemark}}" class="card-remark">（{{item.typeRemark}}）</text>
+        <!-- 🆕 2026-10-11：只给了「日期+客源」的行（导入时没份数）→ 卡片明说还缺什么，点「更改」补 -->
+        <text wx:if="{{item.needFill}}" class="card-warn">⚠️ 待填{{item.setmealId ? '份数' : '套餐/份数'}}</text>
+        <!-- 🆕 自定义餐标：不参与自动备货 → 卡片常驻提醒（2026-10-07） -->
+        <text wx:if="{{item.setmealId === 'custom'}}" class="card-warn">⚠️ 需手动备货</text>
+      </view>
+      <view class="card-foot">
+        <!-- 订购 / 赠送 并列成对，与弹窗表单的配对排布保持一致 -->
+        <view class="qty-pair">
+          <view class="qty-box">
+            <text class="qty-label">订购</text>
+            <text class="qty-num">{{item.orderQty}}</text>
+          </view>
+          <view class="qty-box qty-box-gift">
+            <text class="qty-label">赠送</text>
+            <text class="qty-num">{{item.giftQty}}</text>
+          </view>
+        </view>
+        <text class="card-price">¥{{item.totalAmount}}</text>
+      </view>
+      <view wx:if="{{item.dishSwaps.length}}" class="card-swap">
+        换菜：<text wx:for="{{item.dishSwaps}}" wx:for-item="sw" wx:key="index">{{sw.fromDishName}}→{{sw.toDishName}}{{sw.qty ? ' ×'+sw.qty : '（全部）'}} </text>
+      </view>
+      <view wx:if="{{item.extraDishes.length}}" class="card-swap card-addon">
+        加菜：<text wx:for="{{item.extraDishes}}" wx:for-item="ex" wx:key="index">{{ex.dishName}} ×{{ex.qty || ex.qtyPerSet}}份 </text>
+      </view>
+      <view class="card-actions">
+        <view class="nb nb-sm nb-text" hover-class="nb-hover" hover-stay-time="80" data-id="{{item._id}}" bindtap="onEdit">更改</view>
+        <view class="nb nb-sm nb-text nb-danger" hover-class="nb-hover" hover-stay-time="80" data-id="{{item._id}}" bindtap="onDelete">删除</view>
+      </view>
+    </view>
+    <view wx:if="{{list.length === 0}}" class="list-empty">还没有预定，点左下角「+」添加</view>
+  </view>
+
+  <!-- 悬浮新增（2026-09-30：从右下角挪到左下角）
+       原因：右下角正是卡片「更改 / 删除」的动作区，悬浮按钮浮在上面会先接到点击，
+             表现成「点更改/删除没反应」（z-index:100 + position:fixed）。
+             挪到左边后与右侧动作区彻底错开。
+       同时：t-icon 在本工程不渲染（红圆里一直没有「+」，看着像残留物）→ 改用原生文字「+」。 -->
+  <view class="fab" hover-class="fab-hover" hover-stay-time="80" bindtap="openAdd">
+    <text class="fab-plus">+</text>
+  </view>
+
+  <!-- 新增/编辑弹窗：自绘原生弹层（2026-09-30）
+       tdesign 组件在本工程系统性失效 —— t-input 不渲染、t-icon 不渲染、t-button 点击不触发，
+       t-popup 作为同族里最复杂的组件（依赖 overlay + transition mixin）同样不可靠，
+       这是「点更改没反应」的最后一块拼图 → 改为纯原生 mask + 底部面板，不依赖任何组件内部链路。
+       关闭途径：点遮罩 / 点右上角 ✕ / 点「取消」。 -->
+  <view wx:if="{{showAddPopup}}" class="dlg-mask" bindtap="onPopupClose">
+    <view class="dlg-panel" catchtap="onNoop">
+    <view class="popup-content">
+      <view class="popup-title">
+        <text class="popup-title-txt">{{editingId ? '修改成人套餐预定' : '新增成人套餐预定'}}</text>
+        <text class="popup-close" bindtap="onPopupClose">✕</text>
+      </view>
+      <view class="form-grid">
+        <view class="form-item">
+          <text class="form-label">预定日期 <text class="req">*</text></text>
+          <picker mode="date" value="{{form.date}}" bindchange="onDateChange">
+            <view class="picker-box {{fieldErrors.date ? 'box-err' : ''}}">{{form.date || '请选择'}}</view>
+          </picker>
+          <view wx:if="{{fieldErrors.date}}" class="field-err">{{fieldErrors.date}}</view>
+        </view>
+        <view class="form-item">
+          <text class="form-label">取餐时间 <text class="req">*</text></text>
+          <!-- 取餐时间快捷：午餐 / 晚餐（也可点 picker 选其他时间） -->
+          <view class="chip-row">
+            <view wx:for="{{timeShortcuts}}" wx:key="time" class="chip {{form.time === item.time ? 'chip-active' : ''}}" data-time="{{item.time}}" bindtap="onTimeShortcut">
+              {{item.label}} {{item.time}}
+            </view>
+          </view>
+          <picker mode="time" value="{{form.time}}" bindchange="onTimeChange">
+            <view class="picker-box {{fieldErrors.time ? 'box-err' : ''}}">{{form.time || '请选择'}}</view>
+          </picker>
+          <view wx:if="{{fieldErrors.time}}" class="field-err">{{fieldErrors.time}}</view>
+        </view>
+        <view class="form-item">
+          <text class="form-label">客源 <text class="req">*</text></text>
+          <input class="inp-native {{fieldErrors.customer ? 'inp-err' : ''}}" value="{{form.customer}}" placeholder="如：锦江" placeholder-class="inp-ph" bindinput="onFormChange" data-field="customer" />
+          <view wx:if="{{fieldErrors.customer}}" class="field-err">{{fieldErrors.customer}}</view>
+          <view wx:if="{{lastCustomer && lastCustomer !== form.customer}}" class="chip-row chip-row-inline">
+            <view class="chip chip-soft" bindtap="onPickLastCustomer">上次：{{lastCustomer}}（一键带入）</view>
+          </view>
+        </view>
+        <view class="form-item">
+          <text class="form-label">备注</text>
+          <input class="inp-native" value="{{form.typeRemark}}" placeholder="如：日式餐盒" placeholder-class="inp-ph" bindinput="onFormChange" data-field="typeRemark" />
+        </view>
+        <!-- 套餐种类：语义独立，独占整行，避免把「客源/备注」与「订购数/赠送数」两组配对拆散 -->
+        <view class="form-item form-item-full">
+          <text class="form-label">套餐种类 <text class="req">*</text></text>
+          <picker mode="selector" range="{{setmealOptions}}" range-key="label" value="{{setmealIndex}}" bindchange="onPickSetMeal">
+            <view class="picker-box {{fieldErrors.setmeal ? 'box-err' : ''}}">{{form.setmealName || '请选择套餐'}}</view>
+          </picker>
+          <view wx:if="{{fieldErrors.setmeal}}" class="field-err">{{fieldErrors.setmeal}}</view>
+        </view>
+        <!-- 🆕 自定义餐标（2026-10-07）：单价手填（可留空）+ 备货提醒 -->
+        <view class="form-item form-item-full" wx:if="{{form.setmealId === 'custom'}}">
+          <text class="form-label">自定义单价（元）</text>
+          <input class="inp-native" value="{{form.unitPrice}}" type="digit" placeholder="可留空；金额 = 单价 × 订购数" placeholder-class="inp-ph" bindinput="onFormChange" data-field="unitPrice" />
+          <text class="form-note">⚠️ 自定义餐标不含菜品组成，<text class="form-note-strong">不参与自动备货</text>，请手动备货</text>
+        </view>
+        <view class="form-item">
+          <text class="form-label">订购数 <text class="req">*</text></text>
+          <input class="inp-native {{fieldErrors.orderQty ? 'inp-err' : ''}}" value="{{form.orderQty}}" type="number" placeholder="请输入份数" placeholder-class="inp-ph" bindinput="onFormChange" data-field="orderQty" />
+          <view wx:if="{{fieldErrors.orderQty}}" class="field-err">{{fieldErrors.orderQty}}</view>
+        </view>
+        <view class="form-item">
+          <text class="form-label">赠送数</text>
+          <input class="inp-native" value="{{form.giftQty}}" type="number" placeholder="默认0" placeholder-class="inp-ph" bindinput="onFormChange" data-field="giftQty" />
+        </view>
+      </view>
+      <!-- 换菜（仅此单，套餐定义不变） -->
+      <view class="swap-block">
+        <view class="swap-head" bindtap="onToggleSwapExpand">
+          <text class="swap-title">换菜（可选）</text>
+          <text class="swap-toggle">{{swapExpand ? '收起 ▴' : '展开 ▾'}}（已设 {{form.dishSwaps.length}} 项）</text>
+        </view>
+        <view wx:if="{{swapExpand}}" class="swap-body">
+          <view wx:for="{{form.dishSwaps}}" wx:key="index" class="swap-row">
+            <text class="swap-text">{{item.fromDishName}} → {{item.toDishName}}{{item.qty ? ' ×'+item.qty : '（全部）'}}</text>
+            <text class="swap-del" data-index="{{index}}" bindtap="onRemoveSwap">删除</text>
+          </view>
+          <view wx:if="{{form.dishSwaps.length === 0}}" class="swap-empty">未设置换菜（默认不换）</view>
+          <view class="swap-add">
+            <picker mode="selector" range="{{swapFromOptions}}" range-key="label" value="{{swapFromIndex}}" bindchange="onSwapFromChange">
+              <view class="picker-box swap-picker">{{swapFromOptions[swapFromIndex] ? swapFromOptions[swapFromIndex].label : '原菜（套餐内）'}}</view>
+            </picker>
+            <text class="swap-arrow">→</text>
+            <picker mode="selector" range="{{addOnOptions}}" range-key="label" value="{{swapToIndex}}" bindchange="onSwapToChange">
+              <view class="picker-box swap-picker">{{addOnOptions[swapToIndex] ? addOnOptions[swapToIndex].label : '新菜'}}</view>
+            </picker>
+            <input class="inp-native swap-qty" value="{{swapQty}}" type="number" placeholder="留空=全换" placeholder-class="inp-ph" bindinput="onSwapQtyChange" />
+            <view class="chip chip-soft chip-mini" bindtap="onSwapSameAsOrder">同订购数</view>
+            <view class="chip chip-soft chip-mini" bindtap="onSwapAll">全部替换</view>
+            <view class="nb nb-sm" hover-class="nb-hover" hover-stay-time="80" bindtap="onAddSwap">添加</view>
+          </view>
+          <view class="swap-hint">留空 = 整道菜全换（默认）；如只换其中一部分，填数字或点「同订购数」</view>
+        </view>
+      </view>
+      <!-- 加菜（可选）：保留原组成，按份/套额外追加 -->
+      <view class="swap-block">
+        <view class="swap-head" bindtap="onToggleAddOnExpand">
+          <text class="swap-title">加菜（可选）</text>
+          <text class="swap-toggle">{{addOnExpand ? '收起 ▴' : '展开 ▾'}}（已设 {{form.extraDishes.length}} 项）</text>
+        </view>
+        <view wx:if="{{addOnExpand}}" class="swap-body">
+          <view wx:for="{{form.extraDishes}}" wx:key="index" class="swap-row">
+            <text class="swap-text">加 {{item.dishName}} 共{{item.qty || item.qtyPerSet}}份</text>
+            <text class="swap-del" data-index="{{index}}" bindtap="onRemoveAddOn">删除</text>
+          </view>
+          <view wx:if="{{form.extraDishes.length === 0}}" class="swap-empty">未设置加菜（按套餐原组成备货）</view>
+          <view class="swap-add">
+            <picker mode="selector" range="{{addOnOptions}}" range-key="label" value="{{addOnIndex}}" bindchange="onAddOnChange">
+              <view class="picker-box swap-picker">{{addOnOptions[addOnIndex] ? addOnOptions[addOnIndex].label : '选择加菜'}}</view>
+            </picker>
+            <text class="swap-qty-label">份数 = 订购数</text>
+            <view class="chip chip-soft chip-mini" bindtap="onAddOnSameAsOrder">同订购数</view>
+            <view class="nb nb-sm" hover-class="nb-hover" hover-stay-time="80" bindtap="onAddAddOn">添加</view>
+          </view>
+          <view class="swap-hint">加菜份数固定 = 订购数（{{form.orderQty || 0}} 份）；订多少就加多少，不用手填</view>
+        </view>
+      </view>
+      <view class="popup-actions">
+        <!-- 编辑态才出现：不用退回列表就能删掉这条预定（2026-09-27 用户反馈补） -->
+        <view wx:if="{{editingId}}" class="nb nb-outline nb-danger" hover-class="nb-hover" hover-stay-time="80" bindtap="onDeleteEditing">删除此预定</view>
+        <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onPopupClose">取消</view>
+        <view class="nb" hover-class="nb-hover" hover-stay-time="80" bindtap="onSave">保存</view>
+      </view>
+    </view>
+    </view>
+  </view>
+
+  <!-- 批量粘贴导入预定（2026-10-03）
+       口径与订货页「批量粘贴导入库存」一致：原生弹层 + 实时预览 + 确认才写。
+       ⚠️ 必须用双类 .dlg-mask.dlg-center（见 booking.wxss），否则会被吸底 .dlg-mask 覆盖成贴底。 -->
+  <view wx:if="{{showImportDialog}}" class="dlg-mask dlg-center" bindtap="onCloseImport">
+    <view class="import-panel" catchtap="onNoop">
+      <text class="import-title">📋 批量导入预定</text>
+      <text class="import-tip">① 中文短句：一行一条，如「10.4 靖江行知 18份（送一份）38元」；② 表格列：从 Excel 复制，按「日期 / 客源 / 套餐 / 订购 / 赠送 / 备注」，或「日期 / 客源 / 份数 / 餐标」顺序（后一种自动识别）；③ 也可以分几行写，如「10.5 科奇 30份 送2份 / 餐标50元 / 都是12点左右吃饭」。建议点下方「一键读取剪贴板」。</text>
+
+      <view class="import-read-row">
+        <view class="nb nb-sm import-read-btn" hover-class="nb-hover" hover-stay-time="80" bindtap="onReadClipboard">📥 一键读取剪贴板</view>
+        <text class="import-clear" hover-class="import-clear-hover" bindtap="onClearImport">清空重填</text>
+      </view>
+
+      <textarea class="import-textarea"
+        value="{{importRaw}}"
+        placeholder="在此粘贴，例如：10.4 靖江行知 18份（送一份）38元"
+        placeholder-class="import-ph"
+        maxlength="8000"
+        auto-height="{{false}}"
+        show-confirm-bar="{{false}}"
+        bindinput="onImportInput"
+        bindblur="onImportBlur" />
+
+      <view class="import-time-row">
+        <text class="import-time-label">统一取餐时间</text>
+        <picker mode="time" value="{{importTime}}" bindchange="onImportTimeChange">
+          <view class="picker-box import-time-picker">{{importTime}}</view>
+        </picker>
+        <text class="import-time-hint">导入的记录都记这个时间</text>
+      </view>
+
+      <!-- 解析预览 -->
+      <scroll-view class="import-preview" scroll-y wx:if="{{importPreview}}">
+        <view class="import-stat">
+          <text class="istat ok">✅ 可导入 {{importPreview.okCount}} 条</text>
+          <text class="istat skip" wx:if="{{importPreview.dupCount > 0}}">⏭ 已存在 {{importPreview.dupCount}} 条</text>
+          <text class="istat warn" wx:if="{{importPreview.errCount > 0}}">❓ 需处理 {{importPreview.errCount}} 条</text>
+        </view>
+
+        <view class="import-group" wx:if="{{importPreview.rows.length > 0}}">
+          <view class="import-row" wx:for="{{importPreview.rows}}" wx:key="line">
+            <view class="imp-name-wrap">
+              <!-- 🔴 2026-10-07：真正认不出的行原样回显「原文」。原来只显示「N. —」（日期/客源都没解析出来），
+                   用户既看不出自己粘了什么、也没法照着改；warn 行本来就窄，原文会自动换行。 -->
+              <text class="imp-name warn" wx:if="{{item.status === 'err' && !item.candidates.length}}">{{item.line}}. 原文：{{item.raw}}</text>
+              <text class="imp-name {{item.status === 'err' ? 'warn' : ''}}" wx:else>{{item.line}}. {{item.date || '—'}} {{item.customer || ''}}</text>
+              <text class="imp-tag" wx:if="{{item.status === 'ok' && item.isCustom}}">自定义餐标 · 备注「{{item.remark}}」，订购数按桌数补填</text>
+              <!-- 🆕 2026-10-11：只有「日期+客源」的行 → 先收进来，套餐/份数留空后补 -->
+              <text class="imp-tag" wx:elif="{{item.status === 'ok' && item.needFill}}">待填{{item.setmealId ? '份数' : '套餐/份数'}} · 先收进来，导入后点卡片「更改」补</text>
+              <text class="imp-tag" wx:elif="{{item.status === 'ok'}}">{{item.setmealName}} 订{{item.orderQty}}送{{item.giftQty}} ¥{{item.totalAmount}}</text>
+              <text class="imp-tag skip" wx:elif="{{item.status === 'dup'}}">{{item.setmealName || '待填'}} · 已存在，跳过</text>
+              <text class="imp-tag warn" wx:else>{{item.msg}}</text>
+              <text class="imp-hint" wx:if="{{item.autoPicked}}">{{item.autoHint || '已按该客源历史预选，可点下方更改'}}</text>
+              <!-- 🔴 2026-10-07：认不出套餐/格式的行 → 明确提醒「需手动录入」，并指出入口
+                   （candidates 有值的「待点选」行不提示，那类可点下方 picker 解决） -->
+              <text class="imp-hint manual" wx:if="{{item.status === 'err' && !item.candidates.length}}">自动识别不了 → 请修正写法，或点左下角「+」手动录入这条</text>
+              <!-- 🆕 自定义餐标行：明确「不参与备货」+ 指导补填（2026-10-07） -->
+              <text class="imp-hint manual" wx:if="{{item.isCustom}}">⚠️ 自定义餐标不参与自动备货；导入后请补填订购数（桌数）并手动备货</text>
+            </view>
+            <picker wx:if="{{item.candidates.length}}" mode="selector" range="{{item.candidates}}" range-key="label" value="{{item.pickIndex}}" data-line="{{item.line}}" bindchange="onPickImportMeal">
+              <view class="picker-box imp-pick">{{item.pickedLabel || '点选套餐'}}</view>
+            </picker>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="import-empty" wx:else>
+        <text class="import-empty-text">粘贴后这里会显示「可导入 / 已存在 / 需处理」预览，确认无误再导入</text>
+      </view>
+
+      <view class="import-actions">
+        <view class="nb nb-block nb-default" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseImport">取消</view>
+        <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onConfirmImport">确认导入</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Toast：全项目统一用原生 wx.showToast，tdesign t-toast 从未被调用，标记已移除 -->
+<!-- 弹窗打开时隐藏锚点：scroll-anchor 的 z-index:999 高于弹层(300)，不隐藏会压在「保存」按钮上 -->
+<scroll-anchor show="{{showScrollAnchor && !showAddPopup && !showImportDialog}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

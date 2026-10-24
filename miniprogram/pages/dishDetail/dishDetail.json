@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "number-input": "/components/NumberInput/NumberInput"
+  },
+  "navigationBarTitleText": "菜品详情"
+}

@@ -1,0 +1,387 @@
+/* 个人中心页样式 */
+.page {
+  min-height: 100vh;
+  background: var(--bg-color, #F5F5F5);
+  padding: 24rpx;
+  padding-bottom: 40rpx;
+}
+
+/* 用户信息卡片 */
+.user-card {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg, #FFFFFF);
+  border-radius: var(--radius, 16rpx);
+  box-shadow: var(--shadow, 0 4rpx 16rpx rgba(0,0,0,0.06));
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin-right: 24rpx;
+  background: #F5F5F5;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 8rpx;
+}
+
+.nickname {
+  font-size: var(--font-xl, 36rpx);
+  font-weight: 700;
+  color: var(--text-primary, #333333);
+}
+
+/* 角色标签（原 t-tag theme="danger" light，本工程 tdesign 不渲染 → 原生）2026-10-01 */
+.role-tag {
+  font-size: 20rpx;
+  color: var(--primary-color, #FA5151);
+  background: #FFECEC;
+  border-radius: 6rpx;
+  padding: 2rpx 12rpx;
+}
+
+.openid-text {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+}
+
+/* 存储模式卡片 */
+.storage-card {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg, #FFFFFF);
+  border-radius: var(--radius, 16rpx);
+  box-shadow: var(--shadow, 0 4rpx 16rpx rgba(0,0,0,0.06));
+  padding: 24rpx 32rpx;
+  margin-bottom: 20rpx;
+}
+
+.storage-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.storage-info {
+  flex: 1;
+}
+
+.storage-title {
+  font-size: var(--font-base, 28rpx);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+  display: block;
+}
+
+.storage-desc {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  display: block;
+  margin-top: 4rpx;
+}
+
+/* 功能菜单 */
+.menu-section {
+  margin-bottom: 40rpx;
+}
+
+/* 菜单列表（原生行：原 t-cell-group + t-cell，其 leftIcon 依赖远程字体图标 →
+   本工程字体加载失败导致每行左侧缺一块，2026-10-01 全改原生） */
+.menu-list {
+  background: var(--card-bg, #FFFFFF);
+  border-radius: var(--radius, 16rpx);
+  box-shadow: var(--shadow, 0 4rpx 16rpx rgba(0,0,0,0.06));
+  overflow: hidden;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 28rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.menu-row:last-child {
+  border-bottom: none;
+}
+
+.menu-row-hover {
+  background: #FAFAFA;
+}
+
+.menu-row-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-row-title {
+  font-size: var(--font-base, 28rpx);
+  color: var(--text-primary, #333333);
+  font-weight: 500;
+}
+
+.menu-row-note {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  margin-top: 6rpx;
+}
+
+.menu-row-note.danger {
+  color: var(--primary-color, #FA5151);
+}
+
+.menu-arrow {
+  font-size: 36rpx;
+  color: #CCCCCC;
+  line-height: 1;
+  margin-left: 12rpx;
+}
+
+/* 退出登录区域 */
+.logout-section {
+  display: flex;
+  justify-content: center;
+  padding: 32rpx 0;
+}
+
+.logout-btn {
+  width: 80%;
+  height: 88rpx;
+  border: 2rpx solid var(--primary-color, #FA5151);
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-text {
+  font-size: var(--font-lg, 32rpx);
+  color: var(--primary-color, #FA5151);
+  font-weight: 600;
+}
+
+/* 安全区 */
+.safe-bottom {
+  height: env(safe-area-inset-bottom, 20rpx);
+}
+
+/* ── 权限说明弹窗（原生弹层；全局 .dlg-mask 默认底部对齐，这里覆盖成居中）2026-10-01 ── */
+/* ⚠️ 必须写双类 .dlg-mask.dlg-center：单类 .dlg-center(0,1,0) 与全局 .dlg-mask(0,1,0) 同优先级，
+   后定义者赢 → 会被覆盖成贴底。z-index 400 盖过全局 .dlg-mask 的 300。 */
+.dlg-mask.dlg-center {
+  align-items: center;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+  z-index: 400;
+}
+
+.perm-panel {
+  width: 100%;
+  max-height: 70vh;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 36rpx 32rpx 24rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.perm-title {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 700;
+  color: var(--text-primary, #333333);
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.perm-body {
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 24rpx;
+}
+
+.perm-text {
+  font-size: var(--font-sm, 26rpx);
+  color: #555555;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* ── 导入数据弹窗（原生弹层）2026-10-03 ──
+   弹窗三件套：面板确定高度 height:82vh（微信 scroll-view 只有确定高度才会滚）
+   + 滚动区 flex:1;min-height:0 + 按钮区 flex-shrink:0，否则长表格顶破面板、按钮被推出屏幕。 */
+.imp-panel {
+  width: 100%;
+  height: 82vh;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 32rpx 28rpx 20rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.imp-title {
+  font-size: var(--font-lg, 32rpx);
+  font-weight: 700;
+  color: var(--text-primary, #333333);
+  text-align: center;
+}
+
+.imp-file {
+  font-size: var(--font-sm, 26rpx);
+  color: var(--text-primary, #333333);
+  text-align: center;
+  margin-top: 12rpx;
+  word-break: break-all;
+}
+
+.imp-meta {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  text-align: center;
+  margin: 6rpx 0 16rpx;
+}
+
+.imp-body {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 模式切换 */
+.imp-modes {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.imp-mode {
+  flex: 1;
+  border: 2rpx solid #EDEDED;
+  border-radius: 12rpx;
+  padding: 18rpx 16rpx;
+  box-sizing: border-box;
+  background: #FAFAFA;
+}
+
+.imp-mode.on {
+  border-color: var(--primary-color, #FA5151);
+  background: #FFF4F4;
+}
+
+.imp-mode-t {
+  display: block;
+  font-size: var(--font-sm, 26rpx);
+  font-weight: 600;
+  color: var(--text-primary, #333333);
+}
+
+.imp-mode.on .imp-mode-t {
+  color: var(--primary-color, #FA5151);
+}
+
+.imp-mode-d {
+  display: block;
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+/* 明细表 */
+.imp-table {
+  border: 1rpx solid #EEEEEE;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.imp-tr {
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.imp-tr:last-child {
+  border-bottom: none;
+}
+
+.imp-th {
+  background: #FAFAFA;
+}
+
+.imp-td {
+  font-size: var(--font-sm, 26rpx);
+  color: var(--text-primary, #333333);
+  padding: 16rpx 8rpx;
+  text-align: center;
+}
+
+.imp-th .imp-td {
+  font-size: var(--font-xs, 20rpx);
+  color: var(--text-secondary, #999999);
+}
+
+.imp-td.c1 { flex: 1.6; text-align: left; padding-left: 20rpx; }
+.imp-td.c2 { flex: 0.8; }
+.imp-td.c3 { flex: 0.8; }
+.imp-td.c4 { flex: 1.4; display: flex; justify-content: center; gap: 8rpx; flex-wrap: wrap; }
+
+.imp-badge {
+  font-size: var(--font-xs, 20rpx);
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+  line-height: 1.6;
+}
+
+.imp-badge.add {
+  color: #07C160;
+  background: #EAFBF1;
+}
+
+.imp-badge.upd {
+  color: #FA9D3B;
+  background: #FFF6EA;
+}
+
+.imp-badge.same {
+  color: #999999;
+  background: #F5F5F5;
+}
+
+.imp-sum {
+  margin: 20rpx 0 8rpx;
+}
+
+.imp-sum-line {
+  display: block;
+  font-size: var(--font-sm, 26rpx);
+  color: var(--text-primary, #333333);
+  line-height: 1.6;
+}
+
+.imp-sum-line.warn {
+  color: #FA9D3B;
+}
+
+.imp-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 20rpx;
+  padding-top: 16rpx;
+}
+
+.imp-btn {
+  flex: 1;
+}
+

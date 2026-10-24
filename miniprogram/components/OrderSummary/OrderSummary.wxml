@@ -1,0 +1,76 @@
+<!-- OrderSummary 订单汇总弹窗组件 -->
+<view wx:if="{{visible}}" class="order-overlay" bindtap="onClose">
+  <!-- 弹窗主体，阻止冒泡 -->
+  <view class="order-popup" catchtap="">
+
+    <!-- 标题栏 -->
+    <view class="popup-header">
+      <text class="popup-title">采购订单汇总</text>
+      <text class="popup-close" bindtap="onClose">✕</text>
+    </view>
+
+    <!-- 滚动内容区 -->
+    <scroll-view class="popup-body" scroll-y enhanced show-scrollbar="{{false}}">
+
+      <!-- 按供应商分组 -->
+      <block wx:for="{{supplierGroups}}" wx:key="supplier">
+        <view class="supplier-section">
+          <!-- 供应商名称标题 -->
+          <view class="supplier-title">
+            <text class="supplier-name">{{supplierShort(item.supplier)}}</text>
+            <text class="supplier-count">共 {{item.materials.length}} 种原料</text>
+          </view>
+
+          <!-- 原料明细表 -->
+          <view class="supplier-table">
+            <!-- 表头 -->
+            <view class="st-header">
+              <view class="st-col st-col-name">原料名</view>
+              <view class="st-col st-col-price">单价</view>
+              <view class="st-col st-col-usage">总用量</view>
+              <view class="st-col st-col-stock">当前库存</view>
+              <view class="st-col st-col-suggest">建议采购</view>
+              <view class="st-col st-col-amount">采购金额</view>
+            </view>
+
+            <!-- 数据行 -->
+            <view class="st-row" wx:for="{{item.materials}}" wx:for-item="mat" wx:key="name">
+              <view class="st-col st-col-name">{{mat.name}}</view>
+              <view class="st-col st-col-price">{{moneyText(mat.price)}}</view>
+              <view class="st-col st-col-usage">{{mat.totalUsage}}{{mat.unit}}</view>
+              <view class="st-col st-col-stock">
+                <text class="{{mat.suggestBuy > 0 ? 'stock-warn' : ''}}">{{mat.curStock}}</text>
+              </view>
+              <view class="st-col st-col-suggest">
+                <text class="{{mat.suggestBuy > 0 ? 'suggest-amount' : 'suggest-zero'}}">{{mat.suggestBuy}}{{mat.unit}}</text>
+              </view>
+              <view class="st-col st-col-amount">{{moneyText(mat.purchaseAmount)}}</view>
+            </view>
+          </view>
+
+          <!-- 小计 -->
+          <view class="supplier-subtotal">
+            <text>小计：{{moneyText(item.subtotal)}}</text>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+
+    <!-- 底部汇总 -->
+    <view class="popup-footer">
+      <view class="footer-row">
+        <text class="footer-label">损耗系数</text>
+        <text class="footer-value loss-rate">{{lossRate * 100}}%</text>
+      </view>
+      <view class="footer-row total-row">
+        <text class="footer-label total-label">采购总金额</text>
+        <text class="footer-value total-amount">{{totalMoneyText}}</text>
+      </view>
+      <view class="footer-actions">
+        <view class="btn btn-cancel" bindtap="onClose">取消</view>
+        <view class="btn btn-confirm" bindtap="onConfirm">确认下单</view>
+      </view>
+    </view>
+
+  </view>
+</view>

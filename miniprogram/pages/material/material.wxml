@@ -1,0 +1,181 @@
+<!-- 原料超级表管理页 - 分类/供应商筛选 + 搜索 + 原料表格 + 编辑弹窗 -->
+<view class="page">
+  <!-- 分类筛选 -->
+  <view class="filter-section">
+    <TagFilter title="分类" tags="{{categoryTags}}" active="{{activeCategory}}" bind:change="onCategoryChange" />
+  </view>
+
+  <!-- 供应商筛选 -->
+  <view class="filter-section">
+    <TagFilter title="供应商" tags="{{supplierTags}}" active="{{activeSupplier}}" bind:change="onSupplierChange" />
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="search-wrapper">
+    <SearchBar placeholder="搜索原料名称" bind:search="onSearch" bind:clear="onSearchClear" />
+  </view>
+
+  <!-- 导入 / 批量设置供应商 -->
+  <view class="excel-bar" wx:if="{{canEdit}}">
+    <ExcelUpload bind:import="onExcelImportSuccess" />
+    <view class="sup-bar">
+      <button class="sup-btn" bindtap="onDownloadSupplierTemplate">下载模板</button>
+      <button class="sup-btn primary" bindtap="onOpenSupplierImport">批量设置供应商</button>
+    </view>
+  </view>
+
+  <!-- 库存快调工具条 -->
+  <view class="quick-edit-bar" wx:if="{{canEdit}}">
+    <block wx:if="{{quickEditMode}}">
+      <view class="quick-edit-info">
+        <text class="quick-edit-tip">快调模式 · 已改 {{_quickEditChanges ? Object.keys(_quickEditChanges).length : 0}} 条</text>
+      </view>
+      <view class="quick-edit-actions">
+        <button class="sup-btn" bindtap="onCancelQuickEdit">取消</button>
+        <button class="sup-btn primary" bindtap="onSaveQuickEdit">保存全部</button>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="quick-edit-info">
+        <text class="quick-edit-tip">点此开启后，库存列可逐条直接改数字</text>
+      </view>
+      <view class="quick-edit-actions">
+        <button class="sup-btn primary" bindtap="onToggleQuickEdit">📝 快速调库存</button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 原料表格组件 -->
+  <view class="table-wrapper">
+    <MaterialTable
+      list="{{filteredList}}"
+      canEdit="{{canEdit}}"
+      quickEditMode="{{quickEditMode}}"
+      bind:edit="onMaterialEdit"
+      bind:delete="onMaterialDelete"
+      bind:stockinput="onQuickStockInput"
+      wx:if="{{filteredList.length > 0}}"
+    />
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredList.length === 0 && !loading}}">
+    <text class="empty-icon">📦</text>
+    <text class="empty-text">暂无原料数据</text>
+    <text class="empty-desc" wx:if="{{searchText}}">未找到"{{searchText}}"相关原料</text>
+  </view>
+
+  <!-- 加载中（原来是 t-icon，字体加载失败导致空白 → 改 CSS 转圈） -->
+  <view class="loading" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 悬浮添加按钮（原来是 t-icon「+」→ 看不见，改成文字「＋」） -->
+  <view class="fab" wx:if="{{canEdit}}" bindtap="onAddMaterial" hover-class="fab-hover" hover-stay-time="80">
+    <text class="fab-plus">＋</text>
+  </view>
+
+  <!-- 编辑/新增弹窗（原生弹层：t-popup 在本工程打不开） -->
+  <view wx:if="{{showEditPopup}}" class="dlg-mask" bindtap="onCloseEditPopup">
+    <view class="dlg-panel" catchtap="onNoop">
+      <view class="popup-content">
+        <view class="popup-title">{{isNewMaterial ? '新增原料' : '编辑原料'}}</view>
+        <scroll-view class="popup-form" scroll-y>
+          <!-- 原料名称 -->
+          <view class="form-item">
+            <text class="form-label">原料名称</text>
+            <input class="inp-native" value="{{editForm.name}}" placeholder="请输入名称" placeholder-class="inp-ph"
+              confirm-type="done" data-field="name" bindinput="onEditFormChange" />
+          </view>
+          <!-- 单价 -->
+          <view class="form-item">
+            <text class="form-label">单价 (元)</text>
+            <input class="inp-native" value="{{editForm.price}}" type="digit" placeholder="请输入单价" placeholder-class="inp-ph"
+              confirm-type="done" data-field="price" bindinput="onEditFormChange" />
+          </view>
+          <!-- 单位 -->
+          <view class="form-item">
+            <text class="form-label">单位</text>
+            <input class="inp-native" value="{{editForm.unit}}" placeholder="如：斤、公斤、个" placeholder-class="inp-ph"
+              confirm-type="done" data-field="unit" bindinput="onEditFormChange" />
+          </view>
+          <!-- 分类（原生 picker：原来 t-picker 不渲染，点了没反应） -->
+          <view class="form-item">
+            <text class="form-label">分类</text>
+            <picker mode="selector" range="{{categoryOptions}}" range-key="label" value="{{categoryIndex}}" bindchange="onCategoryPick">
+              <view class="picker-box">{{editForm.category}}</view>
+            </picker>
+          </view>
+          <!-- 供应商输入（自由输入，可直接填新供应商如「松食配送」） -->
+          <view class="form-item">
+            <text class="form-label">供应商</text>
+            <input class="inp-native" value="{{editForm.supplier}}" placeholder="如：松食配送" placeholder-class="inp-ph"
+              confirm-type="done" data-field="supplier" bindinput="onEditFormChange" />
+          </view>
+          <!-- 入库数量 -->
+          <view class="form-item">
+            <text class="form-label">入库数量</text>
+            <input class="inp-native" value="{{editForm.inStock}}" type="digit" placeholder="入库数量" placeholder-class="inp-ph"
+              confirm-type="done" data-field="inStock" bindinput="onEditFormChange" />
+          </view>
+          <!-- 出库数量 -->
+          <view class="form-item">
+            <text class="form-label">出库数量</text>
+            <input class="inp-native" value="{{editForm.outStock}}" type="digit" placeholder="出库数量" placeholder-class="inp-ph"
+              confirm-type="done" data-field="outStock" bindinput="onEditFormChange" />
+          </view>
+          <!-- 初始库存 -->
+          <view class="form-item">
+            <text class="form-label">初始库存</text>
+            <input class="inp-native" value="{{editForm.initStock}}" type="digit" placeholder="初始库存" placeholder-class="inp-ph"
+              confirm-type="done" data-field="initStock" bindinput="onEditFormChange" />
+          </view>
+          <!-- 最低库存阈值 -->
+          <view class="form-item">
+            <text class="form-label">最低库存阈值</text>
+            <input class="inp-native" value="{{editForm.minStock}}" type="digit" placeholder="预警阈值" placeholder-class="inp-ph"
+              confirm-type="done" data-field="minStock" bindinput="onEditFormChange" />
+          </view>
+          <!-- 备注 -->
+          <view class="form-item">
+            <text class="form-label">备注</text>
+            <input class="inp-native" value="{{editForm.remark}}" placeholder="备注信息" placeholder-class="inp-ph"
+              confirm-type="done" data-field="remark" bindinput="onEditFormChange" />
+          </view>
+        </scroll-view>
+        <view class="popup-actions">
+          <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseEditPopup">取消</view>
+          <view class="nb" hover-class="nb-hover" hover-stay-time="80" bindtap="onSaveMaterial">保存</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 批量设置供应商预览弹窗（原生弹层） -->
+  <view wx:if="{{supplierImportVisible}}" class="dlg-mask" bindtap="onCloseSupplierImport">
+    <view class="dlg-panel" catchtap="onNoop">
+      <view class="popup-content">
+        <view class="popup-title">批量设置供应商</view>
+        <view class="import-stat">匹配 {{supplierImportStat.matched}} 条 · 未匹配 {{supplierImportStat.unmatched}} 条</view>
+        <scroll-view class="popup-form" scroll-y>
+          <view wx:for="{{supplierImportPreview}}" wx:key="name" class="sup-row {{item.missing ? 'sup-missing' : ''}}">
+            <text class="sup-name">{{item.name}}</text>
+            <text class="sup-old">{{item.oldSupplier}}</text>
+            <text class="sup-arrow">→</text>
+            <text class="sup-new">{{item.newSupplier}}</text>
+          </view>
+          <view wx:if="{{supplierImportPreview.length === 0}}" class="empty-row"><text>暂无数据</text></view>
+        </scroll-view>
+        <view class="popup-actions">
+          <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onCloseSupplierImport">取消</view>
+          <view class="nb" hover-class="nb-hover" hover-stay-time="80" bindtap="onApplySupplierImport">确认更新</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 删除确认用原生 wx.showModal（原 t-dialog 为空标记，已移除）；提示用 wx.showToast（原 t-toast 已移除） -->
+<!-- 弹窗打开时隐藏锚点：scroll-anchor 的 z-index 高于弹层，不隐藏会压在弹窗按钮上（2026-10-01 补） -->
+<scroll-anchor show="{{showScrollAnchor && !showEditPopup && !supplierImportVisible}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

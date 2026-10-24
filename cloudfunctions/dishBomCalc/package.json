@@ -1,0 +1,9 @@
+{
+  "name": "dishBomCalc",
+  "version": "1.0.0",
+  "description": "菜品BOM配方计算云函数 - 菜品配方的增删改查、批量导入与价格重算",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

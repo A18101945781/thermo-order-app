@@ -1,0 +1,23 @@
+/**
+ * fmt.wxs — 显示层格式化器（2026-10-05）
+ *
+ * 用途：金额统一显示 2 位小数，避免 0.1 × 46 = 4.6000000000000005 这类浮点尾巴。
+ * 只作用于 wxml 显示；数据层保持数字，不影响成本计算、毛利计算与导出。
+ *
+ * ⚠️ 不能改成 parseFloat(x.toFixed(2)) 再回写成数字 —— 4.60 会退化成 4.6，丢掉尾随零。
+ * ⚠️ WXS 编译器（wcc）不支持 `Number(x)` 这种调用写法，会报
+ *    `Unexpected token '('`；必须改用 parseFloat(x)。（2026-10-05 实测）
+ *
+ * 用法：
+ *   <wxs src="../../utils/fmt.wxs" module="fmt" />
+ *   ¥{{fmt.money(item.cost)}}
+ */
+function money(v) {
+  var n = parseFloat(v)
+  if (!isFinite(n)) { return '0.00' }
+  return n.toFixed(2)
+}
+
+module.exports = {
+  money: money
+}

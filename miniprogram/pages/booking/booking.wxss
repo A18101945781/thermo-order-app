@@ -1,0 +1,247 @@
+/* 底部 240rpx：给左下角悬浮「+」留出净空，最后一张卡片的动作区不会被压住 */
+.page { min-height: 100vh; background: #F5F5F5; padding: 24rpx 24rpx 240rpx; }
+
+/* ══ 下次备货看板（2026-10-10 建；2026-10-11 起按营业日算）══ */
+.tb { background: #FFFFFF; border-left: 8rpx solid #1F4E79; border-radius: 16rpx; padding: 20rpx 24rpx; margin-bottom: 20rpx; }
+.tb-idle { border-left-color: #C7CDD4; }
+.tb-head { display: flex; flex-direction: column; }
+.tb-title-row { display: flex; align-items: center; }
+.tb-title { font-size: 28rpx; font-weight: 700; color: #1F4E79; }
+.tb-date { font-size: 23rpx; color: #5A6A7A; background: #EEF3F9; border-radius: 6rpx; padding: 2rpx 12rpx; margin-left: 12rpx; }
+.tb-stat-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8rpx; }
+.tb-stat { font-size: 25rpx; color: #333; flex: 1; min-width: 0; }
+.tb-stat-idle { color: #999; }
+.tb-arrow { font-size: 24rpx; color: #1F4E79; white-space: nowrap; margin-left: 12rpx; }
+.tb-skip { margin-top: 10rpx; font-size: 23rpx; color: #1F4E79; background: #EEF3F9; border-radius: 8rpx; padding: 8rpx 12rpx; }
+.tb-warn { margin-top: 10rpx; font-size: 23rpx; color: #B26A00; background: #FFF7E6; border-radius: 8rpx; padding: 8rpx 12rpx; }
+.tb-body { margin-top: 12rpx; border-top: 1rpx solid #F0F3F7; padding-top: 6rpx; }
+.tb-empty { font-size: 24rpx; color: #999; padding: 14rpx 0; }
+.tb-row { display: flex; align-items: center; padding: 12rpx 8rpx; border-bottom: 1rpx solid #F7F9FC; }
+.tb-row:last-child { border-bottom: none; }
+.tb-row-custom { background: #FFFBF3; border-radius: 8rpx; }
+.tb-row-time { font-size: 23rpx; color: #888; width: 92rpx; flex: 0 0 92rpx; }
+.tb-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tb-row-cus { font-size: 26rpx; color: #222; font-weight: 600; }
+.tb-row-meal { font-size: 23rpx; color: #777; }
+.tb-row-remark { color: #B26A00; }
+.tb-row-qty { font-size: 25rpx; color: #1F4E79; font-weight: 600; white-space: nowrap; margin-left: 12rpx; }
+
+.summary-card { background: #FFFFFF; border-radius: 16rpx; padding: 20rpx 24rpx; margin-bottom: 20rpx; }
+.summary-title { font-size: 28rpx; font-weight: 600; color: #333; margin-bottom: 12rpx; }
+.summary-empty { font-size: 24rpx; color: #999; padding: 12rpx 0; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10rpx 0; border-top: 1rpx solid #F5F5F5; font-size: 26rpx; }
+.summary-key { color: #333; }
+.summary-val { color: #FA5151; }
+
+.list { margin-top: 8rpx; }
+
+/* 取餐时间快捷 + 客源记忆 chip */
+.chip-row { display: flex; gap: 12rpx; flex-wrap: wrap; margin: 8rpx 0 12rpx; }
+.chip-row-inline { margin-top: 8rpx; }
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 8rpx 18rpx; border-radius: 999rpx;
+  background: #F5F5F5; color: #555;
+  font-size: 24rpx; border: 1rpx solid transparent;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chip-active { background: #FFEBEB; color: #FA5151; border-color: #FA5151; font-weight: 600; }
+.chip-soft { background: #EAF6FF; color: #2A6BF2; border-color: #BFD8FF; }
+/* 卡片：position+overflow 让左侧 .card-stripe 色条贴合圆角；左内边距给色条让位 10rpx
+   底色/描边由 js 按日期分组下发（item.colorBg / item.colorBorder）→ 同一天同底色，一眼成组。
+   这里给 1rpx 透明描边占位，避免 inline border-color 生效时布局跳动。 */
+.card { position: relative; overflow: hidden; background: #FFFFFF; border: 1rpx solid transparent; border-radius: 16rpx; padding: 20rpx 24rpx 20rpx 34rpx; margin-bottom: 20rpx; }
+.card-head { display: flex; justify-content: space-between; font-size: 28rpx; color: #333; font-weight: 600; }
+.card-customer { color: #FA5151; }
+.card-body { margin: 8rpx 0; font-size: 26rpx; color: #666; }
+.card-remark { color: #999; }
+/* 🆕 自定义餐标卡片提醒（2026-10-07）：不参与自动备货 */
+.card-warn { font-size: 22rpx; color: #B26A00; background: #FFF7E6; border-radius: 6rpx; padding: 2rpx 10rpx; margin-left: 10rpx; }
+.card-foot { display: flex; justify-content: space-between; align-items: center; font-size: 26rpx; color: #666; }
+.card-price { color: #FA5151; font-weight: 600; }
+/* ── 订购 / 赠送 并列成对块（2026-09-29）──────────────────
+   原为一行文字「订购 10 · 赠送 2」，改为两个并列小块：
+   订购＝计费主体（红），赠送＝不计费（灰），一眼区分。 */
+.qty-pair { display: flex; align-items: center; gap: 12rpx; }
+/* 小块底色用半透明白/黑，而不是固定色 —— 卡片底色已是日期色，固定色会打架 */
+.qty-box { display: flex; align-items: baseline; gap: 8rpx; background: rgba(255,255,255,.78); border-radius: 10rpx; padding: 6rpx 16rpx; }
+.qty-box .qty-label { font-size: 22rpx; color: #C9605F; }
+.qty-box .qty-num { font-size: 28rpx; font-weight: 700; color: #FA5151; }
+.qty-box-gift { background: rgba(0,0,0,.05); }
+.qty-box-gift .qty-label { color: #999; }
+.qty-box-gift .qty-num { color: #666; }
+.card-actions { display: flex; justify-content: flex-end; gap: 12rpx; margin-top: 12rpx; }
+.list-empty { text-align: center; color: #999; font-size: 26rpx; padding: 80rpx 0; }
+
+/* 备货日期栏（2026-10-04 重排）：原为单行 flex 里塞 5 个元素且不换行 ⇒ 被压缩，
+   提示文字挤成 3 行小字、按钮文字竖排「看不清」。改为 3 行：日期行 / 提示行 / 按钮行。 */
+.purchase-bar { background: #FFFFFF; border-radius: 16rpx; padding: 20rpx 24rpx; margin-bottom: 20rpx; }
+.purchase-head { display: flex; align-items: center; gap: 16rpx; }
+.purchase-bar-label { font-size: 28rpx; font-weight: 700; color: #000; white-space: nowrap; }
+.purchase-picker { flex: 1; }
+.purchase-tip { display: block; font-size: 22rpx; color: #999; margin-top: 8rpx; line-height: 1.4; }
+.purchase-actions { display: flex; gap: 16rpx; margin-top: 16rpx; }
+.purchase-actions .nb { flex: 1; justify-content: center; }
+
+/* 悬浮新增：挪到左下角（右下角是卡片「更改/删除」动作区，浮层会吃掉点击）
+   点按有 hover 变暗反馈，一眼看出点击有没有被接收 */
+.fab { position: fixed; left: 40rpx; bottom: 80rpx; width: 96rpx; height: 96rpx; border-radius: 50%;
+  background: #FA5151; box-shadow: 0 8rpx 24rpx rgba(250,81,81,.4);
+  display: flex; align-items: center; justify-content: center; z-index: 100; }
+/* 用文字「+」而不是 t-icon（该组件在本工程不渲染，红圆里一直是空的） */
+.fab-plus { color: #FFFFFF; font-size: 64rpx; line-height: 1; margin-top: -6rpx; }
+.fab-hover { opacity: .82; transform: scale(.94); }
+
+/* ── 自绘原生弹层（2026-09-30）────────────────────────────
+   tdesign t-popup 在本工程不可靠（同 t-input / t-icon / t-button）→ 改用原生 mask + 底部面板。
+   mask 全屏半透明负责遮罩与「点击关闭」，panel 阻止冒泡（catchtap）。
+   面板复用 .popup-content 既有的 height:92vh + overflow-y:auto，仅补顶部圆角。 */
+.dlg-mask { position: fixed; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); z-index: 300; display: flex; align-items: flex-end; }
+/* 2026-10-01：.dlg-mask/.dlg-panel 已提升到 app.wxss 全局（供 material / dishDetail / setmealEdit 共用），
+   但本页沿用「内容自身撑高」方案（.popup-content height:92vh），若继承全局的 88vh + overflow:hidden
+   会被裁掉 4vh、底部按钮被切 → 此处显式覆盖回 auto。 */
+.dlg-panel { width: 100%; height: auto; overflow: visible; }
+
+.popup-content { padding: 28rpx 24rpx 0; max-height: 92vh; height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; background: #fff; min-height: 0; border-radius: 24rpx 24rpx 0 0; }
+.popup-title { position: relative; display: flex; align-items: center; justify-content: center; font-size: 32rpx; font-weight: 600; color: #333; margin-bottom: 16rpx; }
+.popup-title-txt { font-size: 32rpx; font-weight: 600; color: #333; }
+.popup-close { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 34rpx; line-height: 1; color: #999; padding: 8rpx 12rpx; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20rpx; row-gap: 14rpx; }
+.form-item { margin-bottom: 0; }
+/* 独占整行（如「套餐种类」）：避免破坏「客源｜备注」「订购数｜赠送数」两组配对 */
+.form-item-full { grid-column: 1 / -1; }
+.form-label { font-size: 28rpx; font-weight: 700; color: #000000; display: block; margin-bottom: 10rpx; }
+.req { color: #FA5151; font-weight: 700; }
+.field-err { font-size: 22rpx; color: #FA5151; margin-top: 6rpx; }
+/* 🆕 自定义餐标说明（2026-10-07） */
+.form-note { display: block; font-size: 22rpx; color: #B26A00; background: #FFF7E6; border-radius: 6rpx; padding: 6rpx 12rpx; margin-top: 8rpx; line-height: 1.5; }
+.form-note-strong { font-weight: 700; color: #D46B08; }
+.box-err { border: 2rpx solid #FA5151 !important; box-shadow: 0 0 0 4rpx rgba(250,81,81,.12) !important; }
+.inp-err { box-shadow: 0 0 0 4rpx rgba(250,81,81,.18) !important; border-radius: 12rpx; }
+/* 输入控件统一高度（2026-09-30）：picker-box 与原生 input 视觉等高。
+   原来 picker-box 靠上下 padding 撑高（≈72rpx），而微信原生 <input> 的文本区高度不跟 padding 走
+   → 输入框被压扁、文字贴顶、和 picker 参差。改为显式 height + line-height 垂直居中。 */
+.picker-box { box-sizing: border-box; height: 76rpx; line-height: 76rpx; padding: 0 24rpx; background: #FFFFFF; border: 1rpx solid #E5E5E5; border-radius: 12rpx; font-size: 28rpx; color: #333; box-shadow: 0 2rpx 10rpx rgba(0,0,0,.10); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.inp-shadow { box-shadow: 0 2rpx 10rpx rgba(0,0,0,.10); border-radius: 12rpx; }
+
+/* ── 原生输入框（2026-09-27）─────────────────────────────
+   t-input 在页面上不渲染（5 处输入框全部不可见 → 「订购数点击没反应」），
+   改用微信原生 input：无组件依赖、必定渲染，且不受受控回写打断。
+   外观与 .picker-box 保持一致（白底 + 细边 + 圆角 + 轻阴影）。 */
+.inp-native {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 76rpx;          /* 与 .picker-box 等高，两列对齐不再参差 */
+  line-height: 76rpx;     /* 原生 input 靠 line-height 垂直居中 */
+  padding: 0 24rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,.10);
+}
+.inp-ph { color: #BBBBBB; font-size: 28rpx; }
+/* 换菜/加菜区的小号控件：覆盖上面的统一高度，保持紧凑 */
+.inp-native.swap-qty { height: 56rpx; line-height: 56rpx; padding: 0 8rpx; font-size: 24rpx; text-align: center; }
+.popup-actions { display: flex; gap: 20rpx; justify-content: center; padding: 20rpx 0 calc(20rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid #F5F5F5; background: #fff; position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6rpx 18rpx rgba(0,0,0,.06); }
+
+.swap-block { margin-top: 16rpx; border-top: 1rpx solid #F5F5F5; padding-top: 12rpx; }
+.swap-head { display: flex; justify-content: space-between; align-items: center; padding: 8rpx 0; }
+.swap-title { font-size: 28rpx; font-weight: 700; color: #000; }
+.swap-toggle { font-size: 24rpx; color: #FA5151; }
+.swap-body { margin-top: 8rpx; }
+.swap-row { display: flex; justify-content: space-between; align-items: center; padding: 8rpx 0; font-size: 26rpx; color: #333; }
+.swap-text { color: #333; }
+.swap-del { color: #FA5151; font-size: 24rpx; padding-left: 16rpx; }
+.swap-empty { font-size: 24rpx; color: #999; padding: 6rpx 0; }
+.swap-add { display: flex; align-items: center; gap: 10rpx; margin-top: 10rpx; }
+.swap-picker { flex: 1; height: 56rpx; line-height: 56rpx; padding: 0 16rpx; font-size: 24rpx; }
+.swap-arrow { color: #999; font-size: 24rpx; }
+.swap-qty { width: 96rpx; }
+.swap-qty-label { font-size: 22rpx; color: #999; }
+.chip-mini { padding: 8rpx 14rpx; font-size: 22rpx; flex-shrink: 0; }
+.swap-hint { font-size: 22rpx; color: #999; margin-top: 10rpx; line-height: 1.5; }
+.card-swap { font-size: 24rpx; color: #8C6EEF; margin-top: 6rpx; }
+.card-addon { color: #07A35A; }
+
+/* ── 批量粘贴导入预定（2026-10-03）──────────────────────── */
+/* 入口条：备货日期栏下面一条 */
+.import-entry { display: flex; align-items: center; gap: 16rpx; background: #FFFFFF; border-radius: 16rpx; padding: 16rpx 24rpx; margin-bottom: 20rpx; }
+.import-entry-tip { flex: 1; font-size: 22rpx; color: #999; line-height: 1.4; }
+
+/* ⚠️ 双类 .dlg-mask.dlg-center（0,2,0）：单类 .dlg-center(0,1,0) 会被本文件上面的
+   .dlg-mask{ align-items:flex-end } 覆盖 → 弹窗贴底而非居中（2026-10-02 踩过）。
+   z-index 提到 400：高于 .dlg-mask(300)，确保不被压住。 */
+.dlg-mask.dlg-center { align-items: center; justify-content: center; padding: 0 40rpx; z-index: 400; }
+.import-panel {
+  width: 100%;
+  height: 82vh;            /* 确定高度：微信 scroll-view 必须父级有确定高度才会滚 */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 28rpx 24rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, .18);
+}
+.import-title { font-size: 34rpx; font-weight: 700; color: #222; }
+.import-tip { margin-top: 10rpx; font-size: 22rpx; color: #999; line-height: 1.5; }
+.import-textarea {
+  margin-top: 18rpx;
+  width: 100%;
+  height: 220rpx;
+  box-sizing: border-box;
+  padding: 18rpx 20rpx;
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #333;
+  background: #F7F7F7;
+  border: 1rpx solid #E5E5E5;
+  border-radius: 12rpx;
+}
+.import-ph { color: #BBBBBB; font-size: 24rpx; }
+.import-read-row { display: flex; align-items: center; justify-content: space-between; margin-top: 16rpx; }
+.import-read-btn { flex-shrink: 0; }
+.import-clear { font-size: 24rpx; color: #FA5151; padding: 6rpx 10rpx; }
+.import-clear-hover { opacity: .6; }
+
+/* 统一取餐时间 */
+.import-time-row { display: flex; align-items: center; gap: 16rpx; margin-top: 16rpx; }
+.import-time-label { font-size: 26rpx; font-weight: 600; color: #333; flex-shrink: 0; }
+.import-time-picker { flex-shrink: 0; width: 180rpx; height: 64rpx; line-height: 64rpx; text-align: center; }
+.import-time-hint { flex: 1; font-size: 22rpx; color: #999; }
+
+.import-preview {
+  margin-top: 12rpx;
+  flex: 1;
+  min-height: 120rpx;
+  max-height: 40vh;
+  background: #FAFAFA;
+  border-radius: 12rpx;
+  padding: 12rpx 16rpx;
+}
+.import-stat { display: flex; flex-wrap: wrap; gap: 8rpx 20rpx; padding-bottom: 8rpx; border-bottom: 1rpx solid #EEE; }
+.istat { font-size: 24rpx; font-weight: 600; color: #333; }
+.istat.ok { color: #07C160; }
+.istat.warn { color: #E34D59; }
+.istat.skip { color: #999; }
+
+.import-group { margin-top: 14rpx; }
+.import-row { display: flex; align-items: center; justify-content: space-between; padding: 10rpx 0; border-bottom: 1rpx dashed #F0F0F0; }
+.imp-name-wrap { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 8rpx; padding-right: 12rpx; }
+.imp-name { flex: 1; font-size: 26rpx; color: #333; word-break: break-all; }
+.imp-name.warn { color: #E34D59; }
+.imp-tag { font-size: 20rpx; color: #1989FA; background: #EAF3FF; border-radius: 6rpx; padding: 2rpx 10rpx; }
+.imp-tag.warn { color: #E34D59; background: #FDECEE; }
+.imp-tag.skip { color: #999; background: #F2F2F2; }
+.imp-hint { flex-basis: 100%; font-size: 20rpx; color: #B26A00; background: #FFF7E6; border-radius: 6rpx; padding: 4rpx 10rpx; margin-top: 4rpx; }
+.imp-hint.manual { color: #E34D59; background: #FDECEE; }
+.imp-pick { flex-shrink: 0; width: 240rpx; height: 60rpx; line-height: 60rpx; font-size: 22rpx; }
+
+.import-empty { margin-top: 12rpx; padding: 32rpx 16rpx; text-align: center; }
+.import-empty-text { font-size: 24rpx; color: #BBB; line-height: 1.6; }
+
+.import-actions { display: flex; gap: 16rpx; margin-top: 20rpx; flex-shrink: 0; }
+

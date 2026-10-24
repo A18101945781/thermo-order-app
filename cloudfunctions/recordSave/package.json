@@ -1,0 +1,9 @@
+{
+  "name": "recordSave",
+  "version": "1.0.0",
+  "description": "订单记录管理云函数 - 订单记录的保存、分页查询、获取与删除",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

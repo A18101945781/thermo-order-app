@@ -1,0 +1,240 @@
+<!-- 菜品详情页 - 基础信息 + BOM表 + 成本汇总 + 编辑模式 -->
+
+<!-- 金额显示统一保留 2 位小数（2026-10-05）：只作用于显示层，数据层仍是数字，
+     不影响 BOM 计算 / 毛利 / 导出。避免 0.1×46 = 4.6000000000000005 这类浮点尾巴。 -->
+<wxs src="../../utils/fmt.wxs" module="fmt" />
+
+<view class="page">
+  <!-- SOP 模板标识(sopMode进入时) -->
+  <view class="sop-banner" wx:if="{{sopMode}}">
+    <text class="sop-banner-icon">📋</text>
+    <view class="sop-banner-text">
+      <text class="sop-banner-title">标准 SOP 录入</text>
+      <text class="sop-banner-desc">录入组件菜配方,售价为套餐计费时可填 0</text>
+    </view>
+  </view>
+
+  <!-- 头部区域：菜名 + 套餐标签 + 售价 -->
+  <view class="dish-header">
+    <view class="dish-name-row">
+      <!-- 编辑模式：可输入菜名 -->
+      <input wx:if="{{isEdit}}" class="dish-name-input" value="{{dish.dishName}}" bindinput="onDishNameInput" placeholder="输入菜品名称" />
+      <text wx:else class="dish-name">{{dish.dishName}}</text>
+    </view>
+
+    <!-- 套餐类型选择（编辑模式） -->
+    <view class="dish-type-row" wx:if="{{isEdit}}">
+      <text class="edit-label-inline">类型</text>
+      <view class="type-tags">
+        <view class="type-tag {{dish.packageType === '团队套餐' ? 'active' : ''}}" bindtap="onPackageTypeChange" data-type="团队套餐">团队套餐</view>
+        <view class="type-tag {{dish.packageType === 'SOP' ? 'active' : ''}}" bindtap="onPackageTypeChange" data-type="SOP">SOP</view>
+        <view class="type-tag {{dish.packageType === '单品' ? 'active' : ''}}" bindtap="onPackageTypeChange" data-type="单品">单品</view>
+      </view>
+    </view>
+
+    <!-- 售价 -->
+    <view class="dish-price-row">
+      <text class="price-label">售价</text>
+      <!-- 编辑模式：可直接输入 -->
+      <input wx:if="{{isEdit}}" class="price-input" type="digit" value="{{sellPriceDisplay}}" bindinput="onSellPriceInput" placeholder="0" />
+      <text wx:else class="price-value">¥{{fmt.money(sellPriceDisplay)}}</text>
+    </view>
+  </view>
+
+  <!-- BOM 原料明细表 -->
+  <view class="section">
+    <text class="section-title">📋 原料明细 (BOM)</text>
+    <view class="bom-table">
+      <!-- BOM 表头 -->
+      <view class="bom-row bom-header">
+        <text class="bom-col col-name">原料名</text>
+        <text class="bom-col col-num">用量</text>
+        <text class="bom-col col-price">单价</text>
+        <text class="bom-col col-unit">单位</text>
+        <text class="bom-col col-cost">成本</text>
+        <view class="bom-col col-action" wx:if="{{isEdit}}">操作</view>
+      </view>
+
+      <!-- BOM 数据行 -->
+      <view class="bom-row" wx:for="{{dish.bomList}}" wx:key="name" wx:if="{{item.name}}">
+        <text class="bom-col col-name">{{item.name}}</text>
+        <!-- 编辑模式：用量可输入 -->
+        <number-input wx:if="{{isEdit}}" class="bom-col col-num bom-num-input" value="{{item.useNum}}" min="{{0}}" max="{{9999}}" decimal="{{3}}" placeholder="0" bindchange="onBomUseNumChange" data-index="{{index}}" />
+        <text wx:else class="bom-col col-num">{{item.useNum}}</text>
+        <text class="bom-col col-price">¥{{fmt.money(item.price)}}</text>
+        <text class="bom-col col-unit">{{item.unit}}</text>
+        <text class="bom-col col-cost">¥{{fmt.money(item.cost)}}</text>
+        <view class="bom-col col-action" wx:if="{{isEdit}}">
+          <text class="bom-del" bindtap="onRemoveBomItem" data-index="{{index}}">✕</text>
+        </view>
+      </view>
+
+      <!-- 编辑时添加原料按钮 -->
+      <view class="bom-add-row" wx:if="{{isEdit}}">
+        <view class="nb nb-sm nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onOpenAddMaterial">+ 添加原料</view>
+      </view>
+
+      <!-- 无BOM数据 -->
+      <view class="bom-empty" wx:if="{{dish.bomList.length === 0}}">
+        <text>暂无原料明细</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成本汇总 -->
+  <view class="section">
+    <text class="section-title">💰 成本汇总</text>
+    <view class="summary-grid">
+      <view class="summary-item">
+        <text class="summary-label">总成本</text>
+        <text class="summary-value">¥{{fmt.money(dish.totalCost)}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">售价</text>
+        <text class="summary-value price">¥{{fmt.money(dish.sellPrice)}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">毛利</text>
+        <text class="summary-value">{{fmt.money(dish.profit)}}</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">毛利率</text>
+        <text class="summary-value rate">{{fmt.money(dish.grossRate)}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 营养成分（每份成品） -->
+  <view class="section" wx:if="{{nutri}}">
+    <view class="nutri-head">
+      <text class="section-title">🥗 营养成分（每份成品）</text>
+      <text class="nutri-gram">净投料 {{nutri.totalGram}}g</text>
+    </view>
+
+    <!-- 核心五项 -->
+    <view class="nutri-table">
+      <view class="nutri-row nutri-header">
+        <text class="nutri-col col-item">项目</text>
+        <text class="nutri-col col-val">每份含量</text>
+        <text class="nutri-col col-nrv">NRV%</text>
+      </view>
+      <view class="nutri-row">
+        <text class="nutri-col col-item">能量</text>
+        <text class="nutri-col col-val strong">{{nutri.energy}} kcal</text>
+        <text class="nutri-col col-nrv">{{nutri.nrv.energy}}%</text>
+      </view>
+      <view class="nutri-row">
+        <text class="nutri-col col-item">蛋白质</text>
+        <text class="nutri-col col-val">{{nutri.protein}} g</text>
+        <text class="nutri-col col-nrv">{{nutri.nrv.protein}}%</text>
+      </view>
+      <view class="nutri-row">
+        <text class="nutri-col col-item">脂肪</text>
+        <text class="nutri-col col-val">{{nutri.fat}} g</text>
+        <text class="nutri-col col-nrv">{{nutri.nrv.fat}}%</text>
+      </view>
+      <view class="nutri-row">
+        <text class="nutri-col col-item">碳水化合物</text>
+        <text class="nutri-col col-val">{{nutri.cho}} g</text>
+        <text class="nutri-col col-nrv">{{nutri.nrv.cho}}%</text>
+      </view>
+      <view class="nutri-row">
+        <text class="nutri-col col-item">钠</text>
+        <text class="nutri-col col-val">{{nutri.sodium}} mg</text>
+        <text class="nutri-col col-nrv">{{nutri.nrv.sodium}}%</text>
+      </view>
+    </view>
+
+    <!-- 供能比 -->
+    <view class="nutri-ratio">
+      <text class="ratio-label">三大营养素供能比</text>
+      <view class="ratio-bar">
+        <view class="ratio-seg seg-protein" style="width:{{nutri.ratio.protein}}%"></view>
+        <view class="ratio-seg seg-fat" style="width:{{nutri.ratio.fat}}%"></view>
+        <view class="ratio-seg seg-cho" style="width:{{nutri.ratio.cho}}%"></view>
+      </view>
+      <view class="ratio-legend">
+        <text class="legend-item"><text class="dot seg-protein"></text>蛋白 {{nutri.ratio.protein}}%</text>
+        <text class="legend-item"><text class="dot seg-fat"></text>脂肪 {{nutri.ratio.fat}}%</text>
+        <text class="legend-item"><text class="dot seg-cho"></text>碳水 {{nutri.ratio.cho}}%</text>
+      </view>
+    </view>
+
+    <!-- 营养解读 -->
+    <view class="nutri-tips">
+      <view class="tip-line tip-{{item.level}}" wx:for="{{nutriTips}}" wx:key="text">{{item.text}}</view>
+    </view>
+
+    <!-- 缺失原料提示 -->
+    <view class="nutri-missing" wx:if="{{nutriMissing.length > 0}}">
+      ⚠ 以下原料暂无营养数据，未计入：{{nutriMissing[0].name}}<text wx:if="{{nutriMissing.length > 1}}"> 等 {{nutriMissing.length}} 项</text>
+    </view>
+
+    <!-- 逐原料明细 -->
+    <view class="nutri-toggle" bindtap="onToggleNutriDetail">
+      {{showNutriDetail ? '收起逐原料明细 ▲' : '展开逐原料明细 ▼'}}
+    </view>
+    <view class="nutri-detail" wx:if="{{showNutriDetail}}">
+      <view class="nutri-row nutri-header">
+        <text class="nutri-col col-dn">原料</text>
+        <text class="nutri-col col-dg">用量</text>
+        <text class="nutri-col col-de">能量</text>
+        <text class="nutri-col col-dp">蛋白</text>
+        <text class="nutri-col col-df">脂肪</text>
+      </view>
+      <view class="nutri-row" wx:for="{{nutri.items}}" wx:key="name">
+        <text class="nutri-col col-dn">{{item.name}}<text class="est-mark" wx:if="{{item.src === 'est'}}">*</text></text>
+        <text class="nutri-col col-dg">{{item.gram}}g</text>
+        <text class="nutri-col col-de">{{item.energy}}</text>
+        <text class="nutri-col col-dp">{{item.protein}}</text>
+        <text class="nutri-col col-df">{{item.fat}}</text>
+      </view>
+      <view class="nutri-note">
+        数据来源《中国食物成分表》标准版第6版；NRV 参照 GB 28050 每日营养素参考值。
+        <text wx:if="{{nutri.estCount > 0}}">带 * 为复合加工品估算值（共 {{nutri.estCount}} 项）。</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑模式下的保存按钮 -->
+  <view class="edit-bar" wx:if="{{isEdit}}">
+    <view class="nb nb-block" hover-class="nb-hover" hover-stay-time="80" bindtap="onSaveDish">保存菜品</view>
+  </view>
+
+  <!-- 添加原料弹出层（原生弹层：t-popup 在本工程打不开、t-input 不渲染） -->
+  <view wx:if="{{showAddPopup}}" class="dlg-mask" bindtap="onClosePopup">
+    <view class="dlg-panel" catchtap="onNoop">
+      <view class="popup-content">
+        <view class="popup-title">选择原料 (已选{{dish.bomList.length}}项)</view>
+        <!-- 搜索原料（原生 input） -->
+        <view class="popup-search">
+          <input class="inp-native" value="{{materialSearch}}" placeholder="搜索原料名称" placeholder-class="inp-ph"
+            confirm-type="search" bindinput="onMaterialSearchChange" />
+        </view>
+        <!-- 原料列表 -->
+        <scroll-view class="popup-scroll" scroll-y wx:if="{{availableMaterials.length > 0}}">
+          <view class="popup-item" wx:for="{{availableMaterials}}" wx:key="_id"
+            bindtap="onAddBomItem"
+            data-id="{{item._id}}" data-name="{{item.name}}"
+            data-price="{{item.price}}" data-unit="{{item.unit}}">
+            <view class="popup-item-left">
+              <text class="popup-item-name">{{item.name}}</text>
+              <text class="popup-item-unit">{{item.unit}}</text>
+            </view>
+            <text class="popup-item-price">¥{{fmt.money(item.price)}}</text>
+          </view>
+        </scroll-view>
+        <view class="popup-empty" wx:if="{{availableMaterials.length === 0}}">
+          <text>未找到可用原料</text>
+        </view>
+        <view class="popup-close">
+          <view class="nb nb-outline" hover-class="nb-hover" hover-stay-time="80" bindtap="onClosePopup">关闭</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提示统一用原生 wx.showToast（原 t-toast 为空标记，已移除） -->
+<!-- 弹窗打开时隐藏锚点：scroll-anchor 的 z-index 高于弹层，不隐藏会压在弹窗按钮上（2026-10-01 补） -->
+<scroll-anchor show="{{showScrollAnchor && !showAddPopup && !showNutriDetail}}" progress="{{scrollProgress}}" bind:totop="onScrollAnchorTop" />
+</view>

@@ -1,0 +1,34 @@
+<!-- SearchBar 搜索栏组件 -->
+<view class="search-bar">
+  <view class="search-inner">
+    <!-- 搜索图标 -->
+    <text class="search-icon">🔍</text>
+
+    <!-- 输入框 -->
+    <input
+      class="search-input"
+      type="text"
+      placeholder="{{placeholder}}"
+      value="{{innerValue}}"
+      bindinput="onInput"
+      bindconfirm="onSearch"
+      bindblur="onBlur"
+      confirm-type="search"
+      focus="{{false}}"
+    />
+
+    <!-- 清除按钮 -->
+    <text
+      wx:if="{{innerValue.length > 0}}"
+      class="search-clear"
+      bindtap="onClear"
+    >✕</text>
+  </view>
+
+  <!-- 取消按钮（可选扩展） -->
+  <text
+    wx:if="{{innerValue.length > 0}}"
+    class="search-cancel"
+    bindtap="onClear"
+  >取消</text>
+</view>
